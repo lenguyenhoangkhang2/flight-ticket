@@ -1,19 +1,12 @@
-import { CreateSessionInput } from "@/schema/auth.schema";
-import {
-  findSessionById,
-  signAccessToken,
-  signRefreshToken,
-} from "@/service/auth.service";
-import { findUserByEmail, findUserById } from "@/service/user.service";
-import { verifyJwt } from "@/utils/jwt";
-import { Request, Response } from "express";
-import { get } from "lodash";
+import { CreateSessionInput } from '@/schema/auth.schema';
+import { findSessionById, signAccessToken, signRefreshToken } from '@/service/auth.service';
+import { findUserByEmail, findUserById } from '@/service/user.service';
+import { verifyJwt } from '@/utils/jwt';
+import { Request, Response } from 'express';
+import { get } from 'lodash';
 
-export async function createSessionHandler(
-  req: Request<{}, {}, CreateSessionInput>,
-  res: Response
-) {
-  const message = "Invalid email or password";
+export async function createSessionHandler(req: Request<unknown, unknown, CreateSessionInput>, res: Response) {
+  const message = 'Invalid email or password';
   const { email, password } = req.body;
   const user = await findUserByEmail(email);
   if (!user) {
@@ -21,7 +14,7 @@ export async function createSessionHandler(
   }
 
   if (!user.verified) {
-    return res.send("Please verify your email");
+    return res.send('Please verify your email');
   }
 
   const isValid = await user.validatePassword(password);
@@ -44,14 +37,11 @@ export async function createSessionHandler(
 }
 
 export async function refreshAccessTokenHandler(req: Request, res: Response) {
-  const errMessage = "Could not refresh access token";
+  const errMessage = 'Could not refresh access token';
 
-  const refreshToken = get(req, "headers.x-refresh");
+  const refreshToken = get(req, 'headers.x-refresh');
 
-  const decoded = verifyJwt<{ session: string }>(
-    refreshToken,
-    "refreshTokenPublicKey"
-  );
+  const decoded = verifyJwt<{ session: string }>(refreshToken, 'refreshTokenPublicKey');
 
   if (!decoded) {
     return res.status(401).send(errMessage);

@@ -1,25 +1,25 @@
-import { object, string, TypeOf } from "zod";
+import { object, string, TypeOf } from 'zod';
 
 export const createUseSchema = object({
   body: object({
     firstName: string({
-      required_error: "First name is required",
+      required_error: 'First name is required',
     }),
     lastName: string({
-      required_error: "Last name is required",
+      required_error: 'Last name is required',
     }),
     password: string({
-      required_error: "Password is required",
-    }).min(6, "Password is too short = should be min 6 chars"),
+      required_error: 'Password is required',
+    }).min(6, 'Password is too short = should be min 6 chars'),
     passwordConfirmation: string({
-      required_error: "Password confirmation is required",
+      required_error: 'Password confirmation is required',
     }),
     email: string({
-      required_error: "Email is required",
-    }).email("Not a valid email"),
+      required_error: 'Email is required',
+    }).email('Not a valid email'),
   }).refine((data) => data.password === data.passwordConfirmation, {
-    message: "Password do not match",
-    path: ["passwordConfirmation"],
+    message: 'Password do not match',
+    path: ['passwordConfirmation'],
   }),
 });
 
@@ -32,9 +32,7 @@ export const verifyUserSchema = object({
 
 export const forgotPasswordSchema = object({
   body: object({
-    email: string({ required_error: "Email is required" }).email(
-      "Not a valid email"
-    ),
+    email: string({ required_error: 'Email is required' }).email('Not a valid email'),
   }),
 });
 
@@ -45,21 +43,21 @@ export const resetPasswordSchema = object({
   }),
   body: object({
     password: string({
-      required_error: "Password is required",
-    }).min(6, "Password is too short = should be min 6 chars"),
+      required_error: 'Password is required',
+    }).min(6, 'Password is too short = should be min 6 chars'),
     passwordConfirmation: string({
-      required_error: "Password confirmation is required",
+      required_error: 'Password confirmation is required',
     }),
   }).refine((data) => data.password === data.passwordConfirmation, {
-    message: "Password do not match",
-    path: ["passwordConfirmation"],
+    message: 'Password do not match',
+    path: ['passwordConfirmation'],
   }),
 });
 
-export type CreateUserInput = TypeOf<typeof createUseSchema>["body"];
+export type CreateUserInput = TypeOf<typeof createUseSchema>['body'];
 
-export type VerifyUserInput = TypeOf<typeof verifyUserSchema>["params"];
+export type VerifyUserInput = TypeOf<typeof verifyUserSchema>['params'];
 
-export type ForgotPasswordInput = TypeOf<typeof forgotPasswordSchema>["body"];
+export type ForgotPasswordInput = TypeOf<typeof forgotPasswordSchema>['body'];
 
 export type ResetPasswordInput = TypeOf<typeof resetPasswordSchema>;
