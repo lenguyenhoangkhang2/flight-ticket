@@ -1,26 +1,12 @@
-import {
-  getModelForClass,
-  modelOptions,
-  pre,
-  prop,
-  Severity,
-  DocumentType,
-  index,
-} from "@typegoose/typegoose";
-import { nanoid } from "nanoid";
-import argon2 from "argon2";
-import log from "@/utils/logger";
+import { getModelForClass, modelOptions, pre, prop, Severity, DocumentType, index } from '@typegoose/typegoose';
+import { nanoid } from 'nanoid';
+import argon2 from 'argon2';
+import log from '@/utils/logger';
 
-export const UserPrivateFields = [
-  "password",
-  "__v",
-  "verificationCode",
-  "passwordResetCode",
-  "verified",
-];
+export const UserPrivateFields = ['password', '__v', 'verificationCode', 'passwordResetCode', 'verified'];
 
-@pre<User>("save", async function () {
-  if (!this.isModified("password")) return;
+@pre<User>('save', async function () {
+  if (!this.isModified('password')) return;
 
   const hash = await argon2.hash(this.password);
 
@@ -62,7 +48,7 @@ export class User {
     try {
       return await argon2.verify(this.password, candidatePassword);
     } catch (e) {
-      log.error(e, "Could not validate password");
+      log.error(e, 'Could not validate password');
       return false;
     }
   }

@@ -1,12 +1,13 @@
 export default {
   port: 3000,
-  dbUri: "mongodb://localhost:27017/user-api",
-  logLevel: "info",
+  dbUsername: process.env.DB_USERNAME,
+  dbPassword: process.env.DB_PASSWORD,
+  logLevel: 'info',
   smtp: {
-    user: "uonij4yknst4qhck@ethereal.email",
-    pass: "S53sHR1yQySxBBAgTH",
+    user: 'uonij4yknst4qhck@ethereal.email',
+    pass: 'S53sHR1yQySxBBAgTH',
     port: 587,
-    host: "smtp.ethereal.email",
+    host: 'smtp.ethereal.email',
     secure: false,
   },
 };
