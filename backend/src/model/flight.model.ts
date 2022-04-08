@@ -3,9 +3,14 @@ import { Airport } from './airport.model';
 import { Seat } from './seat.model';
 import { User } from './user.model';
 
+@modelOptions({
+  schemaOptions: {
+    _id: false,
+  },
+})
 export class SeatClassAmount {
-  @prop({ required: true, type: () => Seat })
-  type: Seat;
+  @prop({ required: true, ref: () => Seat })
+  type: Ref<Seat>;
 
   @prop({ required: true })
   amount: number;
@@ -15,8 +20,8 @@ export class Ticket {
   @prop({ required: true, ref: () => User })
   user: Ref<User>;
 
-  @prop({ required: true })
-  seat_class: Seat;
+  @prop({ required: true, ref: () => Seat })
+  seat_class: Ref<Seat>;
 
   @prop({ required: true })
   price: number;
@@ -25,13 +30,19 @@ export class Ticket {
   paid: boolean;
 }
 
+@modelOptions({
+  schemaOptions: {
+    _id: false,
+  },
+})
 export class Stopover {
   @prop({ required: true, ref: () => Airport })
   airport: Ref<Airport>;
 
   @prop({ min: 0, required: true })
-  @prop()
   deylay: number;
+
+  @prop()
   note?: string;
 }
 
@@ -64,6 +75,9 @@ export class Flight {
 
   @prop({ type: () => [Ticket], default: [] })
   tickets?: Ticket[];
+
+  @prop({ required: true, min: 0 })
+  price: number;
 }
 
 const FlightModel = getModelForClass(Flight);

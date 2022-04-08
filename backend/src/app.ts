@@ -23,42 +23,72 @@ app.listen(port, () => {
   log.info(`App started at http://localhost:${port}`);
 
   connectToDb();
-  // exeQueries();
+  exeQueries();
 });
 
-// async function exeQueries() {
-//   try {
-//     const user = await UserModel.findOne({ email: 'lenguyenhoangkhang2@gmail.com' });
+async function exeQueries() {
+  try {
+    const user = await UserModel.findOne({ email: 'lenguyenhoangkhang2@gmail.com' });
 
-//     if (user) {
-//       const hanoiAirport = await AirportModel.create({ name: 'Ha Noi', location: 'Ha Noi, Viet Nam' } as Airport);
-//       const hcmAirport = await AirportModel.create({
-//         name: 'Ho Chi Minh',
-//         location: 'Ho Chi Minh, Viet Nam',
-//       } as Airport);
+    if (user) {
+      let hanoiAirport, hcmAirport, danangAirport, firstClassSeat;
 
-//       const firstClassSeat = await SeatModel.create({ className: 'First Class', extraFee: 5 } as Seat);
+      hanoiAirport = await AirportModel.findOne({ name: 'Ha Noi' });
+      if (!hanoiAirport) {
+        hanoiAirport = await AirportModel.create({ name: 'Ha Noi', location: 'Ha Noi, Viet Nam' } as Airport);
+      }
 
-//       const tickets: Ticket[] = [
-//         {
-//           user: user._id,
-//           paid: true,
-//           price: 105000,
-//           seat_class: firstClassSeat._id,
-//         },
-//       ];
+      hcmAirport = await AirportModel.findOne({ name: 'Ho Chi Minh' });
+      if (!hcmAirport) {
+        hcmAirport = await AirportModel.create({
+          name: 'Ho Chi Minh',
+          location: 'Ho Chi Minh, Viet Nam',
+        } as Airport);
+      }
 
-//       await FlightModel.create({
-//         seats: ,
-//         from_location: hcmAirport,
-//         to_location: hanoiAirport,
-//         airline_name: 'VietNam Airline',
-//         departure_time: new Date(),
-//         arrival_time: new Date(),
-//         tickets: tickets,
-//       } as Flight);
-//     }
-//   } catch (err) {
-//     console.log(err);
-//   }
-// }
+      danangAirport = await AirportModel.findOne({ name: 'Da Nang' });
+      if (!danangAirport) {
+        danangAirport = await AirportModel.create({
+          name: 'Da Nang',
+          location: 'Da Nang, Viet Nam',
+        } as Airport);
+      }
+
+      firstClassSeat = await SeatModel.findOne({ className: 'First Class' });
+      if (!firstClassSeat) {
+        firstClassSeat = await SeatModel.create({ className: 'First Class', extraFee: 5 } as Seat);
+      }
+
+      let tickets: Ticket[];
+
+      console.log(firstClassSeat);
+
+      if (firstClassSeat) {
+        tickets = [
+          {
+            user: user._id,
+            paid: true,
+            price: 105000,
+            seat_class: firstClassSeat._id,
+          },
+        ];
+
+        const flight = await FlightModel.create({
+          seats: [{ type: firstClassSeat, amount: 20 }],
+          from_location: hcmAirport,
+          to_location: hanoiAirport,
+          airline_name: 'VietNam Airline',
+          departure_time: new Date(),
+          arrival_time: new Date(),
+          tickets: tickets,
+          stopover: [{ airport: danangAirport, deylay: 1800 }],
+          price: 100000,
+        } as Flight);
+
+        console.log(flight);
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
