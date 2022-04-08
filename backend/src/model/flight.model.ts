@@ -35,7 +35,7 @@ export class Stopover {
   note?: string;
 }
 
-@index({ flight_id: 1 })
+@index({ flight_id: 1, 'tickets.ticket_id': 1 }, { unique: true })
 @modelOptions({
   schemaOptions: {
     timestamps: true,
@@ -63,11 +63,8 @@ export class Flight {
   @prop({ required: true })
   arrival_time: Date;
 
-  @prop({ required: true })
-  n_first_class_seat: number;
-
-  @prop({ required: true })
-  n_second_class_seat: number;
+  @prop({ required: true, type: () => [Seat] })
+  seats: Seat[];
 
   @prop({ type: () => [Ticket], default: [] })
   tickets?: Ticket[];

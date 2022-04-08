@@ -5,6 +5,11 @@ import log from '@/utils/logger';
 
 export const UserPrivateFields = ['password', '__v', 'verificationCode', 'passwordResetCode', 'verified'];
 
+export enum UserRole {
+  'ADMIN',
+  'USER',
+}
+
 @pre<User>('save', async function () {
   if (!this.isModified('password')) return;
 
@@ -27,10 +32,10 @@ export class User {
   email: string;
 
   @prop({ required: true })
-  firstName: string;
+  name: string;
 
   @prop({ required: true })
-  lastName: string;
+  identityCardNumber: string;
 
   @prop({ required: true })
   password: string;

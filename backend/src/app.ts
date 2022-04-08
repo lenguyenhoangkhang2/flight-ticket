@@ -1,5 +1,5 @@
 require('module-alias/register');
-require('dotenv').config();
+import 'dotenv/config';
 import express from 'express';
 import config from 'config';
 import connectToDb from '@/utils/connectToDb';
