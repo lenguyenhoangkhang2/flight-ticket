@@ -1,10 +1,14 @@
 import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
 import { Airport } from './airport.model';
+import { Seat } from './seat.model';
 import { User } from './user.model';
 
-export enum Seat {
-  'FIRST_CLASS',
-  'SECOND_CLASS',
+export class SeatClassAmount {
+  @prop({ required: true, type: () => Seat })
+  type: Seat;
+
+  @prop({ required: true })
+  amount: number;
 }
 
 export class Ticket {
@@ -55,8 +59,8 @@ export class Flight {
   @prop({ required: true })
   arrival_time: Date;
 
-  @prop({ required: true, type: () => [Seat] })
-  seats: Seat[];
+  @prop({ required: true, type: () => [SeatClassAmount] })
+  seats: SeatClassAmount[];
 
   @prop({ type: () => [Ticket], default: [] })
   tickets?: Ticket[];

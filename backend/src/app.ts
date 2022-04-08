@@ -6,6 +6,10 @@ import connectToDb from '@/utils/connectToDb';
 import log from '@/utils/logger';
 import router from '@/routes/index';
 import deserializeUser from './middleware/deserializeUser';
+import AirportModel, { Airport } from './model/airport.model';
+import FlightModel, { Flight, Ticket } from './model/flight.model';
+import SeatModel, { Seat } from './model/seat.model';
+import UserModel, { User } from './model/user.model';
 
 const app = express();
 
@@ -24,19 +28,34 @@ app.listen(port, () => {
 
 // async function exeQueries() {
 //   try {
-//     const hanoiAirport = await AirportModel.findOne({ name: 'Ha Noi' });
-//     const hcmAirport = await AirportModel.findOne({ name: 'Ho Chi Minh' });
-//     if (hanoiAirport && hcmAirport) {
-//       await FlightModel.create({
-//         seat: {
-//           first_class: 20,
-//           second_class: 50,
+//     const user = await UserModel.findOne({ email: 'lenguyenhoangkhang2@gmail.com' });
+
+//     if (user) {
+//       const hanoiAirport = await AirportModel.create({ name: 'Ha Noi', location: 'Ha Noi, Viet Nam' } as Airport);
+//       const hcmAirport = await AirportModel.create({
+//         name: 'Ho Chi Minh',
+//         location: 'Ho Chi Minh, Viet Nam',
+//       } as Airport);
+
+//       const firstClassSeat = await SeatModel.create({ className: 'First Class', extraFee: 5 } as Seat);
+
+//       const tickets: Ticket[] = [
+//         {
+//           user: user._id,
+//           paid: true,
+//           price: 105000,
+//           seat_class: firstClassSeat._id,
 //         },
-//         to_location: hanoiAirport,
+//       ];
+
+//       await FlightModel.create({
+//         seats: ,
 //         from_location: hcmAirport,
+//         to_location: hanoiAirport,
 //         airline_name: 'VietNam Airline',
-//         arrival_time: new Date(),
 //         departure_time: new Date(),
+//         arrival_time: new Date(),
+//         tickets: tickets,
 //       } as Flight);
 //     }
 //   } catch (err) {
