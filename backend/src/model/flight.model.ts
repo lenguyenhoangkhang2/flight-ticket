@@ -1,5 +1,4 @@
-import { getModelForClass, index, modelOptions, prop, Ref } from '@typegoose/typegoose';
-import { customAlphabet } from 'nanoid';
+import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
 import { Airport } from './airport.model';
 import { User } from './user.model';
 
@@ -9,9 +8,6 @@ export enum Seat {
 }
 
 export class Ticket {
-  @prop({ default: () => customAlphabet('1234567890qwertyuiopasdfghjklzxcvbnm', 15)() })
-  ticket_id!: string;
-
   @prop({ required: true, ref: () => User })
   user: Ref<User>;
 
@@ -35,16 +31,12 @@ export class Stopover {
   note?: string;
 }
 
-@index({ flight_id: 1, 'tickets.ticket_id': 1 }, { unique: true })
 @modelOptions({
   schemaOptions: {
     timestamps: true,
   },
 })
 export class Flight {
-  @prop({ unique: true, default: () => customAlphabet('1234567890qwertyuiopasdfghjklzxcvbnm', 10)() })
-  flight_id?: string;
-
   @prop({ required: true })
   airline_name: string;
 

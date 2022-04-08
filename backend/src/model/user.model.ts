@@ -5,11 +5,6 @@ import log from '@/utils/logger';
 
 export const UserPrivateFields = ['password', '__v', 'verificationCode', 'passwordResetCode', 'verified'];
 
-export enum UserRole {
-  'ADMIN',
-  'USER',
-}
-
 @pre<User>('save', async function () {
   if (!this.isModified('password')) return;
 
@@ -48,6 +43,9 @@ export class User {
 
   @prop({ default: false })
   verified: boolean;
+
+  @prop({ default: false })
+  isAdmin?: boolean;
 
   async validatePassword(this: DocumentType<User>, candidatePassword: string) {
     try {
