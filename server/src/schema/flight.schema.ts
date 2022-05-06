@@ -1,7 +1,15 @@
-import { isAirportExist } from '@/service/airport.service';
-import { isSeatExist } from '@/service/seat.service';
-import { number, object, string, TypeOf } from 'zod';
+import { existsBySeatId } from '@/service/seat.service';
+import { array, number, object, string, TypeOf } from 'zod';
 import _ from 'lodash';
+import { existsByAirportId } from '@/service/airport.service';
+import { existsFlightById } from '@/service/flight.service';
+
+const flightId = string({
+  required_error: 'Flight Id is required',
+}).refine(
+  async (val) => !!(await existsFlightById(val)),
+  (val) => ({ message: `Not found flight with id ${val}` }),
+);
 
 export const createFlightSchema = object({
   body: object({
@@ -11,12 +19,14 @@ export const createFlightSchema = object({
 
     fromLocation: string({
       required_error: 'From Location is required',
-    }).refine(async (val) => !!(await isAirportExist(val)), { message: 'Invalid location' }),
+    }).refine(async (val) => !!(await existsByAirportId(val)), {
+      message: 'Airport location not found',
+    }),
 
     toLocation: string({
       required_error: 'To Location is required',
-    }).refine(async (val) => !!(await isAirportExist(val)), {
-      message: 'Invalid location',
+    }).refine(async (val) => !!(await existsByAirportId(val)), {
+      message: 'Airport location not found',
     }),
 
     departureTime: string({
@@ -35,10 +45,26 @@ export const createFlightSchema = object({
       required_error: 'Price is required',
     }).min(0, { message: 'Invalid price' }),
 
+    stopovers: array(
+      object({
+        airport: string({
+          required_error: 'Stopover location required',
+        }).refine(async (val) => !!(await existsByAirportId(val)), {
+          message: 'Airport location not found',
+        }),
+        delay: number({
+          required_error: 'Stopover delay required',
+        }),
+        note: string(),
+      }).partial({
+        note: true,
+      }),
+    ).default([]),
+
     seats: object({
       type: string({
         required_error: 'Type of seat is required',
-      }).refine(async (val) => !!(await isSeatExist(val)), {
+      }).refine(async (val) => !!(await existsBySeatId(val)), {
         message: 'Seat type not exist',
       }),
       amount: number({
@@ -50,17 +76,61 @@ export const createFlightSchema = object({
       .refine((val) => val.length === _.uniqBy(val, 'type').length, {
         message: 'Exist duplicate seat type',
       }),
-
-    timeForPaymentTicket: string({
-      required_error: 'Time for payment ticket is required',
-    }).transform((val) => new Date(val)),
   })
     .refine(({ departureTime, arrivalTime }) => departureTime < arrivalTime, {
       message: 'Departure time must before Arrival time',
     })
     .refine(({ fromLocation, toLocation }) => fromLocation !== toLocation, {
       message: 'fromLocation must diffirent toLocation',
+    })
+    .refine(
+      ({ fromLocation, toLocation, stopovers }) => {
+        const index = stopovers.findIndex(({ airport }) => airport === fromLocation || airport === toLocation);
+        return index === -1;
+      },
+      { message: 'Exists Stopover identical with fromLocation or toLocation', path: ['stopovers'] },
+    ),
+});
+
+export const updateFlightSchema = object({
+  params: object({
+    flightId,
+  }),
+  body: createFlightSchema.shape.body,
+});
+
+export const getFlightsSchema = object({
+  query: object({
+    departureDate: string({
+      required_error: 'Deaparture Date is required',
+    }).refine((val) => Date.parse(val), { message: 'Invalid Date' }),
+  }),
+});
+
+export const addFlightTicketSchema = object({
+  params: object({
+    flightId,
+  }),
+  body: array(
+    object({
+      seatClass: string({
+        required_error: 'Type of seat is required',
+      }).refine(async (val) => !!(await existsBySeatId(val)), {
+        message: 'Seat type not exist',
+      }),
+      amount: number().nonnegative(),
+    }),
+  )
+    .min(1)
+    .refine((val) => val.length === _.uniqBy(val, 'seatClass').length, {
+      message: 'Exist duplicate seat class',
     }),
 });
 
 export type createFlightInput = TypeOf<typeof createFlightSchema>['body'];
+
+export type updateFlightInput = TypeOf<typeof updateFlightSchema>;
+
+export type getFlightsInput = TypeOf<typeof getFlightsSchema>;
+
+export type addFlightTicketInput = TypeOf<typeof addFlightTicketSchema>;

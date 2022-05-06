@@ -7,6 +7,7 @@ import log from '@/utils/logger';
 import router from '@/routes/index';
 import deserializeUser from './middleware/deserializeUser';
 import initialAdmin from './utils/initialAdmin';
+import initialConfig from './utils/initialConfig';
 
 const app = express();
 const port = config.get('port');
@@ -20,4 +21,5 @@ app.listen(port, async () => {
 
   await connectToDb();
   await initialAdmin();
+  await initialConfig();
 });

@@ -27,7 +27,7 @@ export async function createUserHandler(
       return res.status(409).send('Account email already exists');
     }
 
-    return res.status(500).send(e);
+    return res.status(500).send(e.message);
   }
 }
 

@@ -2,6 +2,7 @@ import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose'
 import { Airport } from './airport.model';
 import { Seat } from './seat.model';
 import { User } from './user.model';
+
 @modelOptions({
   schemaOptions: {
     _id: false,
@@ -9,7 +10,7 @@ import { User } from './user.model';
 })
 export class SeatClassAmount {
   @prop({ required: true, ref: () => Seat })
-  type: Ref<Seat>;
+  type: Ref<Seat, string>;
 
   @prop({ required: true })
   amount: number;
@@ -17,16 +18,19 @@ export class SeatClassAmount {
 
 export class Ticket {
   @prop({ required: true, ref: () => User })
-  user: Ref<User>;
+  user: Ref<User, string>;
 
   @prop({ required: true, ref: () => Seat })
-  seat_class: Ref<Seat>;
+  seatClass: Ref<Seat, string>;
 
   @prop({ required: true })
   price: number;
 
   @prop({ default: false })
   paid: boolean;
+
+  @prop({ default: true })
+  idValid: boolean;
 }
 
 @modelOptions({
@@ -36,10 +40,10 @@ export class Ticket {
 })
 export class Stopover {
   @prop({ required: true, ref: () => Airport })
-  airport: Ref<Airport>;
+  airport: Ref<Airport, string>;
 
   @prop({ min: 0, required: true })
-  deylay: number;
+  delay: number;
 
   @prop()
   note?: string;
@@ -55,13 +59,13 @@ export class Flight {
   airline: string;
 
   @prop({ ref: () => Airport })
-  fromLocation: Ref<Airport>;
+  fromLocation: Ref<Airport, string>;
 
   @prop({ ref: () => Airport })
-  toLocation!: Ref<Airport>;
+  toLocation: Ref<Airport, string>;
 
   @prop({ type: () => [Stopover], default: [] })
-  stopovers?: Stopover[];
+  stopovers: Stopover[];
 
   @prop({ required: true, type: () => Date })
   departureTime: Date;
@@ -76,10 +80,10 @@ export class Flight {
   seats: SeatClassAmount[];
 
   @prop({ type: () => [Ticket], default: [] })
-  tickets?: Ticket[];
+  tickets: Ticket[];
 
   @prop({ required: true, type: () => Date })
-  timeForPaymentTicket?: Date;
+  timeForPaymentTicket: Date;
 }
 
 const FlightModel = getModelForClass(Flight);

@@ -16,4 +16,14 @@ export default {
     identityCardNumber: process.env.ADMIN_IDENTITY,
     name: process.env.ADMIN_NAME,
   },
+  initialConfig: {
+    airportAmountMax: process.env.AIRPORT_AMOUNT_MAX,
+    seatClassAmountMax: process.env.SEATCLASS_AMOUNT_MAX,
+    flightTimeMin: process.env.FLIGHT_TIME_MIN,
+    numberStopoverMax: process.env.NUMBER_STOPOVER_MAX,
+    timeDelayMin: process.env.TIME_DELAY_MIN,
+    timeDelayMax: process.env.TIME_DELAY_MAX,
+    timeLimitBuyTicket: process.env.TIME_LIMIT_BUY_TICKET,
+    timeLimitCancelTicket: process.env.TIME_LIMIT_CANCEL_TICKET,
+  },
 };

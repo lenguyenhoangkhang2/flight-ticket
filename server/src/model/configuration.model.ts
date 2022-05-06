@@ -13,6 +13,9 @@ export class Configuration {
   airportAmountMax: number;
 
   @prop({ required: true })
+  seatClassAmountMax: number;
+
+  @prop({ required: true })
   flightTimeMin: number;
 
   @prop({ required: true })

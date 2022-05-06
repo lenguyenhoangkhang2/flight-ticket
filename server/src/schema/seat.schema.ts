@@ -1,18 +1,18 @@
-import { isClassnameExist } from '@/service/seat.service';
+import { existsBySeatClassname, existsBySeatId } from '@/service/seat.service';
 import { number, object, string, TypeOf } from 'zod';
 
 export const createSeatSchema = object({
   body: object({
     className: string({
       required_error: 'Class name is required',
-    }).refine(async (val) => !(await isClassnameExist(val)), {
+    }).refine(async (val) => !(await existsBySeatClassname(val)), {
       message: 'Class name is exist',
     }),
 
     extraFee: number({
       required_error: 'Extra fee is required',
     })
-      .min(0, {
+      .nonnegative({
         message: 'Extra fee must greater than or equal to 0',
       })
       .max(100, {
@@ -21,4 +21,23 @@ export const createSeatSchema = object({
   }),
 });
 
+export const updateSeatSchema = object({
+  params: object({
+    seatId: string({
+      required_error: 'Seat id is required',
+    }).refine(async (val) => !!(await existsBySeatId(val)), {
+      message: 'Not found seat class with Id',
+    }),
+  }),
+  body: createSeatSchema.shape.body.extend({
+    className: string({
+      required_error: 'Class name is required',
+    }),
+  }),
+});
+
 export type createSeatInput = TypeOf<typeof createSeatSchema>['body'];
+
+export type updateSeatInput = TypeOf<typeof updateSeatSchema>['body'];
+
+export type verifySeatIdInput = TypeOf<typeof updateSeatSchema>['params'];
