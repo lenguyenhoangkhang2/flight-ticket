@@ -1,0 +1,902 @@
+{
+	"info": {
+		"_postman_id": "c065ffea-fe86-4d93-9aa6-fb9b0bd9c8d8",
+		"name": "Flight Ticket App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Register user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{name}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"passwordConfirmation\": \"{{passwordConfirmation}}\",\n    \"identityCardNumber\": \"{{identityCardNumber}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify user",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/users/verify/:id/:verificationCode",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"verify",
+								":id",
+								":verificationCode"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "620c66521c67952cabbbee43"
+								},
+								{
+									"key": "verificationCode",
+									"value": "cxlldwNpFA6c7RW8kDHsU"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request reset password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{email}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/users/forgot-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{passwordTwo}}\",\n    \"passwordConfirmation\": \"{{passwordTwo}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/users/reset-password/:id/:passwordResetCode",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"reset-password",
+								":id",
+								":passwordResetCode"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "620cf3691ce161f5e38f4c4d"
+								},
+								{
+									"key": "passwordResetCode",
+									"value": "5c1Lx5RZn0fqfvwYx7zLq"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/users/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const {accessToken, refreshToken} = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"accessToken\", accessToken)",
+									"pm.collectionVariables.set(\"refreshToken\", refreshToken);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/sessions",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"sessions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh access token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const {accessToken} = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"accessToken\", accessToken)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-refresh",
+								"value": "{{refreshToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/sessions/refresh",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"sessions",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flight",
+			"item": [
+				{
+					"name": "Create Flight",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const numOfStopover = Math.floor(Math.random() * (pm.collectionVariables.get(\"configs\").numberStopoverMax + 1));",
+									"const minDelay = pm.collectionVariables.get(\"configs\").timeDelayMin;",
+									"const maxDelay = pm.collectionVariables.get(\"configs\").timeDelayMax;",
+									"",
+									"const seats = pm.collectionVariables.get(\"seats\");",
+									"",
+									"const startTime = (new Date(\"2022-5-10\")).getTime();",
+									"const endTime = (new Date(\"2022-5-31\")).getTime();",
+									"const flightDuration = Math.round(Math.random() * 86400000 / 900) * 900;",
+									"console.log(flightDuration);",
+									"const departureTime = new Date(Math.round((Math.random() * (endTime - startTime + 1) + startTime) / 900) * 900);",
+									"const arrivalTime = new Date(departureTime.getTime() + flightDuration);",
+									"",
+									"const suffledAirports = new Array(...pm.collectionVariables.get(\"airports\")).sort((a, b) => 0.5 - Math.random());",
+									"const randomAirports = suffledAirports.slice(0, numOfStopover + 2);",
+									"",
+									"const fromLocation = randomAirports.shift();",
+									"const toLocation = randomAirports.shift();",
+									"const stopovers = randomAirports.map(stopAirport => ({",
+									"    airport: stopAirport._id,",
+									"    delay: Math.round((Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay) / 300) * 300,",
+									"    note: (Math.random() < 0.5) ? undefined : \"This is a text note\"",
+									"}))",
+									"",
+									"pm.variables.set(\"fromLocation\", fromLocation._id);",
+									"pm.variables.set(\"toLocation\", toLocation._id);",
+									"pm.variables.set(\"stopovers\", JSON.stringify(stopovers));",
+									"pm.variables.set(\"seats\", JSON.stringify(",
+									"    seats.map(seat => ({",
+									"        type: seat._id,",
+									"        amount: Math.floor(Math.random() * (10 - 5 + 1)) + 5",
+									"    }))",
+									"));",
+									"pm.variables.set(\"departureTime\", departureTime);",
+									"pm.variables.set(\"arrivalTime\", arrivalTime);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"airline\": \"{{$randomCompanyName}} Airline\",\n    \"fromLocation\": \"{{fromLocation}}\",\n    \"toLocation\": \"{{toLocation}}\",\n    \"seats\": {{seats}},\n    \"stopovers\": {{stopovers}},\n    \"arrivalTime\": \"{{arrivalTime}}\",\n    \"departureTime\": \"{{departureTime}}\",\n    \"price\": {{$randomPrice}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/flights",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"flights"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Flight",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"airline\": \"{{$randomCompanyName}}\",\n    \"fromLocation\": \"626ff6899bc24df1ad560e45\",\n    \"toLocation\": \"626ff6ba9bc24df1ad560e48\",\n    \"seats\": [\n        {\n            \"type\": \"626f8e5e4d863b4d90119b3b\",\n            \"amount\": 50\n        }\n    ],\n    \"stopovers\": [\n        {\n            \"airport\": \"62727a1029d10b22239c1505\",\n            \"delay\": 900\n        }\n    ],\n    \"arrivalTime\": \"{{$randomDateFuture}}\",\n    \"departureTime\": \"{{$randomDateFuture}}\",\n    \"price\": {{$randomPrice}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/flights/6272a1cd32df84e8a7664be",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"flights",
+								"6272a1cd32df84e8a7664be"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flights",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/flights?departureDate=2022/5/22",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"flights"
+							],
+							"query": [
+								{
+									"key": "departureDate",
+									"value": "2022/5/22"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ticket Flight",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"flightId\", \"6277dba362f0fd069a5acb7d\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"seatClassId\": \"62747d7761381cc8c323b46b\",\n        \"amount\": 7\n    },\n    {\n        \"seatClassId\": \"62747d7e61381cc8c323b470\",\n        \"amount\": 2\n    }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/flights/{{flightId}}/tickets",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"flights",
+								"{{flightId}}",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flight",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/flights/62752a3368f75d04d50c75eb",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"flights",
+								"62752a3368f75d04d50c75eb"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Seat",
+			"item": [
+				{
+					"name": "Create Seat Class",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"extraFee\", Math.floor(Math.random() * 10 + 1))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"className\": \"{{$randomProductAdjective}} Class\",\n    \"extraFee\": {{extraFee}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/seats",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"seats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Seat Class",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"className\": \"Second Class\",\n    \"extraFee\": 6\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/seats/626f8e5e4d863b4d90119b3b",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"seats",
+								"626f8e5e4d863b4d90119b3b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Seats",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"seats\", pm.response.json());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/seats",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"seats"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Airport",
+			"item": [
+				{
+					"name": "Create Airport",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{$randomCity}} Airport\",\n    \"location\": \"{{$randomStreetName}}, {{$randomCity}}, {{$randomCountry}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/airports",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"airports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Airport",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ho Chi Minh\",\n    \"location\": \"Thu do Ha Noi, Viet Nam\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/airports/626ff6899bc24df1ad560e45",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"airports",
+								"626ff6899bc24df1ad560e45"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airports",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"airports\", pm.response.json());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/airports",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"airports"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Config",
+			"item": [
+				{
+					"name": "Get All Data Role Config",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"configs\", pm.response.json())",
+									"console.log(\"Set configs\", pm.collectionVariables.get(\"configs\"))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/configs",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"configs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Healthcheck",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/healthcheck",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "adminEmail",
+			"value": "lenguyenhoangkhang2@gmail.com"
+		},
+		{
+			"key": "adminPassword",
+			"value": "hoangkhang887"
+		},
+		{
+			"key": "adminName",
+			"value": "Lê Nguyễn Hoàng Khang"
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
+		},
+		{
+			"key": "name",
+			"value": "Lê Nguyễn Hoàng Khang"
+		},
+		{
+			"key": "email",
+			"value": "lenguyenhoangkhang2@gmail.com"
+		},
+		{
+			"key": "password",
+			"value": "hoangkhang887"
+		},
+		{
+			"key": "passwordConfirmation",
+			"value": "hoangkhang887"
+		},
+		{
+			"key": "identityCardNumber",
+			"value": "352634737"
+		},
+		{
+			"key": "host",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "airports",
+			"value": "[]"
+		},
+		{
+			"key": "configs",
+			"value": ""
+		},
+		{
+			"key": "seats",
+			"value": ""
+		}
+	]
+}

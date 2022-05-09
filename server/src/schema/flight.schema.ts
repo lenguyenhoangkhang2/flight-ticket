@@ -1,5 +1,5 @@
 import { existsBySeatId } from '@/service/seat.service';
-import { array, number, object, string, TypeOf } from 'zod';
+import { any, array, number, object, string, TypeOf } from 'zod';
 import _ from 'lodash';
 import { existsByAirportId } from '@/service/airport.service';
 import { existsFlightById } from '@/service/flight.service';
@@ -17,13 +17,13 @@ export const createFlightSchema = object({
       required_error: 'Airline is required',
     }),
 
-    fromLocation: string({
+    fromLocation: any({
       required_error: 'From Location is required',
     }).refine(async (val) => !!(await existsByAirportId(val)), {
       message: 'Airport location not found',
     }),
 
-    toLocation: string({
+    toLocation: any({
       required_error: 'To Location is required',
     }).refine(async (val) => !!(await existsByAirportId(val)), {
       message: 'Airport location not found',
@@ -55,9 +55,7 @@ export const createFlightSchema = object({
         delay: number({
           required_error: 'Stopover delay required',
         }),
-        note: string(),
-      }).partial({
-        note: true,
+        note: string().optional(),
       }),
     ).default([]),
 
@@ -113,18 +111,33 @@ export const addFlightTicketSchema = object({
   }),
   body: array(
     object({
-      seatClass: string({
+      seatClassId: string({
         required_error: 'Type of seat is required',
-      }).refine(async (val) => !!(await existsBySeatId(val)), {
-        message: 'Seat type not exist',
       }),
-      amount: number().nonnegative(),
+      amount: number({
+        required_error: 'Amount of tickets is required',
+      }).nonnegative(),
     }),
   )
     .min(1)
-    .refine((val) => val.length === _.uniqBy(val, 'seatClass').length, {
+    .refine((val) => val.length === _.uniqBy(val, 'seatClassId').length, {
       message: 'Exist duplicate seat class',
     }),
+});
+
+export const getFlightShema = object({
+  params: object({
+    flightId,
+  }),
+});
+
+export const updateTicketsToPaidSchema = object({
+  params: object({
+    userId: string({
+      required_error: 'User Id is required',
+    }),
+    flightId,
+  }),
 });
 
 export type createFlightInput = TypeOf<typeof createFlightSchema>['body'];
@@ -133,4 +146,8 @@ export type updateFlightInput = TypeOf<typeof updateFlightSchema>;
 
 export type getFlightsInput = TypeOf<typeof getFlightsSchema>;
 
+export type updateTicketsToPaidInput = TypeOf<typeof updateTicketsToPaidSchema>['params'];
+
 export type addFlightTicketInput = TypeOf<typeof addFlightTicketSchema>;
+
+export type getFlightInput = TypeOf<typeof getFlightShema>['params'];

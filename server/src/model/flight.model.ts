@@ -1,4 +1,4 @@
-import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
+import { getModelForClass, modelOptions, prop, Ref, index } from '@typegoose/typegoose';
 import { Airport } from './airport.model';
 import { Seat } from './seat.model';
 import { User } from './user.model';
@@ -8,29 +8,34 @@ import { User } from './user.model';
     _id: false,
   },
 })
-export class SeatClassAmount {
+export class SeatsOfFlight {
   @prop({ required: true, ref: () => Seat })
-  type: Ref<Seat, string>;
+  type: Ref<Seat>;
 
   @prop({ required: true })
   amount: number;
 }
 
+@modelOptions({
+  schemaOptions: {
+    timestamps: true,
+  },
+})
 export class Ticket {
   @prop({ required: true, ref: () => User })
-  user: Ref<User, string>;
+  user?: Ref<User>;
 
   @prop({ required: true, ref: () => Seat })
-  seatClass: Ref<Seat, string>;
+  seatClass: Ref<Seat>;
 
   @prop({ required: true })
-  price: number;
+  price?: number;
 
   @prop({ default: false })
-  paid: boolean;
+  paid?: boolean;
 
   @prop({ default: true })
-  idValid: boolean;
+  isValid?: boolean;
 }
 
 @modelOptions({
@@ -40,7 +45,7 @@ export class Ticket {
 })
 export class Stopover {
   @prop({ required: true, ref: () => Airport })
-  airport: Ref<Airport, string>;
+  airport: Ref<Airport>;
 
   @prop({ min: 0, required: true })
   delay: number;
@@ -59,10 +64,10 @@ export class Flight {
   airline: string;
 
   @prop({ ref: () => Airport })
-  fromLocation: Ref<Airport, string>;
+  fromLocation: Ref<Airport>;
 
   @prop({ ref: () => Airport })
-  toLocation: Ref<Airport, string>;
+  toLocation: Ref<Airport>;
 
   @prop({ type: () => [Stopover], default: [] })
   stopovers: Stopover[];
@@ -76,11 +81,11 @@ export class Flight {
   @prop({ required: true, min: 0 })
   price: number;
 
-  @prop({ required: true, type: () => [SeatClassAmount] })
-  seats: SeatClassAmount[];
+  @prop({ required: true, type: () => [SeatsOfFlight] })
+  seats: SeatsOfFlight[];
 
   @prop({ type: () => [Ticket], default: [] })
-  tickets: Ticket[];
+  tickets?: Ticket[];
 
   @prop({ required: true, type: () => Date })
   timeForPaymentTicket: Date;

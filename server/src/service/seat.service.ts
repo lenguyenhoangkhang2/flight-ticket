@@ -45,3 +45,7 @@ export async function getAllSeats() {
 export async function countSeats() {
   return SeatModel.countDocuments();
 }
+
+export async function getSeatClassById(seatClassId: string) {
+  return SeatModel.findById(seatClassId);
+}
