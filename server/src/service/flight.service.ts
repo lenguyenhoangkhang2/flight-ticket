@@ -5,6 +5,7 @@ import { DocumentType, isDocument } from '@typegoose/typegoose';
 import dayjs from 'dayjs';
 import _, { result } from 'lodash';
 import { User } from '@/model/user.model';
+import { getConfigrugationValue } from './config.service';
 
 export async function createFlight(flight: Partial<Flight>) {
   return FlightModel.create(flight);
@@ -107,4 +108,32 @@ export async function updateTicketsOrderedToPaidByUserAndFlight(
   });
 
   await flight.save();
+}
+
+export async function cancelExpiredTickets() {
+  const config = await getConfigrugationValue();
+
+  if (!config) throw new Error('Configuration environment variable not found');
+
+  const flights = await FlightModel.find({
+    $expr: {
+      $gte: [Date.now(), '$timeForPaymentTicket'],
+    },
+  });
+
+  if (!flights.length) return;
+
+  return Promise.all(
+    flights.map((flight) => {
+      flight.tickets = flight.tickets!.map((ticket) => {
+        if (!ticket.paid) {
+          ticket.isValid = false;
+        }
+
+        return ticket;
+      });
+
+      return flight.save();
+    }),
+  );
 }

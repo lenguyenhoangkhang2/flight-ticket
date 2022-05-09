@@ -56,7 +56,6 @@ export async function getFlightHandler(req: Request<getFlightInput>, res: Respon
     if (!flight) throw new Error('Flight not found');
 
     if (!res.locals.user?.isAdmin) {
-      console.log(flight.toJSON());
       return res.send(_.omit(flight.toJSON(), ['tickets']));
     }
 
@@ -238,9 +237,21 @@ export async function addTicketsFlightHandler(
   try {
     const { flightId } = req.params;
 
+    const config = await getConfigrugationValue();
+
+    if (!config) throw new Error('Configuration environment variable not found');
+
     const flight = await getFlightById(flightId);
 
     if (!flight) throw new Error('Flight not found');
+
+    if (dayjs(flight.departureTime).isBefore(dayjs())) {
+      return res.status(400).send('Flight in past');
+    }
+
+    if (dayjs(flight.departureTime).subtract(config.timeLimitBuyTicket, 'day').isBefore(dayjs(), 'day')) {
+      return res.status(400).send('Now is expiration date for the order');
+    }
 
     const seatsOfFlight = flight.seats.map((seat) => {
       if (!isDocument(seat.type)) {

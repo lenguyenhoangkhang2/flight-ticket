@@ -8,6 +8,8 @@ import router from '@/routes/index';
 import deserializeUser from './middleware/deserializeUser';
 import initialAdmin from './utils/initialAdmin';
 import initialConfig from './utils/initialConfig';
+import * as cron from 'node-cron';
+import { cancelExpiredTickets } from './service/flight.service';
 
 const app = express();
 const port = config.get('port');
@@ -22,4 +24,8 @@ app.listen(port, async () => {
   await connectToDb();
   await initialAdmin();
   await initialConfig();
+
+  cron.schedule('* * * * *', async () => {
+    await cancelExpiredTickets();
+  });
 });
