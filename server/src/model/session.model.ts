@@ -5,10 +5,13 @@ import { User } from './user.model';
   user: 1,
 })
 export class Session {
-  @prop({ ref: () => User })
+  @prop({ required: true, ref: () => User })
   user: Ref<User>;
 
-  @prop({ type: () => Date, default: Date.now(), expires: 3600 * 30 * 24 })
+  @prop({ required: true, default: true })
+  valid?: boolean;
+
+  @prop({ required: true, type: () => Date, default: Date.now(), expires: 3600 * 30 * 24 })
   createdAt: Date;
 }
 

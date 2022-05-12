@@ -19,8 +19,9 @@ export function verifyJwt<T>(token: string, keyName: 'accessTokenPublicKey' | 'r
 
   try {
     const decoded = jwt.verify(token, publicKey) as T;
+
     return decoded;
-  } catch (e) {
-    return null;
+  } catch (e: any) {
+    throw e;
   }
 }

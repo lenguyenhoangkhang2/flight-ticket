@@ -3,7 +3,15 @@ import { nanoid } from 'nanoid';
 import argon2 from 'argon2';
 import log from '@/utils/logger';
 
-export const UserPrivateFields = ['password', '__v', 'verificationCode', 'passwordResetCode', 'verified'];
+export const UserPrivateFields = [
+  'password',
+  '__v',
+  'verificationCode',
+  'passwordResetCode',
+  'verified',
+  'createdAt',
+  'updatedAt',
+];
 
 @pre<User>('save', async function () {
   if (!this.isModified('password')) return;
@@ -15,9 +23,7 @@ export const UserPrivateFields = ['password', '__v', 'verificationCode', 'passwo
 })
 @index({ email: 1 })
 @modelOptions({
-  schemaOptions: {
-    timestamps: true,
-  },
+  schemaOptions: { timestamps: true },
   options: {
     allowMixed: Severity.WARN,
   },

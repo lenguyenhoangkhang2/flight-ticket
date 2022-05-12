@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import FlightList from "../components/FlightList";
+import FlightsTable from "../components/FlightsTable.js";
 import MOCK_FLIGHTS from "../MOCK_FLIGHTS.json";
 
 const FlightPage = () => {
@@ -15,7 +15,7 @@ const FlightPage = () => {
       >
         Danh Sách Chuyến Bay
       </Typography>
-      <FlightList flights={MOCK_FLIGHTS} />
+      <FlightsTable flights={MOCK_FLIGHTS} />
     </div>
   );
 };

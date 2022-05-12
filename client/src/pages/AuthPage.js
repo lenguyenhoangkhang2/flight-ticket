@@ -9,18 +9,16 @@ const useStyles = makeStyles({
   },
 });
 
-const initalState = {
-  email: "",
-  password: "",
-  name: "",
-  passwordConfirm: "",
-  identityCardNumber: "",
-};
-
 export default function Auth({ isSignupForm = false }) {
   const classes = useStyles();
 
-  const [values, setValues] = useState(initalState);
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+    name: "",
+    passwordConfirm: "",
+    identityCardNumber: "",
+  });
 
   return (
     <Container maxWidth="xs">

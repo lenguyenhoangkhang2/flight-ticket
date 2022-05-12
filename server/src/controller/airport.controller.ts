@@ -44,6 +44,7 @@ export async function updateAirportHandler(req: Request<verifyAirportIdInput, an
     const { name, location } = req.body;
 
     const exists = await existsByAirportNameAndExceptId(name, airportId);
+
     if (exists) {
       return res.send({
         message: 'Name is exists',

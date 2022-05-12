@@ -1,8 +1,10 @@
 export default {
-  port: 3000,
+  port: 8000,
   dbUsername: process.env.DB_USERNAME,
   dbPassword: process.env.DB_PASSWORD,
   logLevel: 'info',
+  accessTokenTtl: '15m',
+  refreshTokenTtl: '1y',
   smtp: {
     user: 'uonij4yknst4qhck@ethereal.email',
     pass: 'S53sHR1yQySxBBAgTH',

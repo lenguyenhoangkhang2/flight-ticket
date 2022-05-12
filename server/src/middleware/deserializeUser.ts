@@ -8,10 +8,21 @@ const deserializeUser = async (req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
-  const decoded = verifyJwt(accessToken, 'accessTokenPublicKey');
+  let decoded;
+
+  try {
+    decoded = verifyJwt(accessToken, 'accessTokenPublicKey');
+  } catch (err: any) {
+    return res.send({
+      code: 401,
+      message: err.message,
+    });
+  }
 
   if (decoded) {
     res.locals.user = decoded;
+
+    return next();
   }
 
   return next();

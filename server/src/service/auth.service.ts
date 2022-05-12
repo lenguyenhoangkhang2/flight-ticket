@@ -1,39 +1,44 @@
-import SessionModel from '@/model/session.model';
-import { UserPrivateFields, User } from '@/model/user.model';
+import SessionModel, { Session } from '@/model/session.model';
+import { User, UserPrivateFields } from '@/model/user.model';
 import { signJwt } from '@/utils/jwt';
+import _ from 'lodash';
+import config from 'config';
 import { DocumentType } from '@typegoose/typegoose';
-import { omit } from 'lodash';
 
-export async function createSession({ userId }: { userId: string }) {
-  return SessionModel.create({ user: userId });
+export async function createSession(user: DocumentType<User>) {
+  return SessionModel.create({ user });
 }
 
-export async function signRefreshToken({ userId }: { userId: string }) {
-  const session = await createSession({ userId });
+export async function findSessionById(id: string) {
+  return SessionModel.findById(id);
+}
+
+export async function removeSession(id: string) {
+  return SessionModel.findByIdAndDelete(id);
+}
+
+export async function signRefreshToken(session: DocumentType<Session>) {
+  const refreshTokenTtl = config.get<string>('refreshTokenTtl');
+
   const refreshToken = signJwt(
     {
-      session: session._id,
+      sessionId: session._id,
     },
     'refreshTokenPrivateKey',
     {
-      // expiresIn: '60 days',
-      expiresIn: '60 days',
+      expiresIn: refreshTokenTtl,
     },
   );
 
   return refreshToken;
 }
 
-export function signAccessToken(user: DocumentType<User>) {
-  const payload = omit(user.toJSON(), UserPrivateFields);
+export function signAccessToken(user: DocumentType<User>, session: DocumentType<Session>) {
+  const payload = _.omit(user.toJSON(), UserPrivateFields);
 
-  const accessToken = signJwt(payload, 'accessTokenPrivateKey', {
-    expiresIn: '1h',
+  const accessToken = signJwt({ ...payload, sessionId: session._id }, 'accessTokenPrivateKey', {
+    expiresIn: config.get('accessTokenTtl'),
   });
 
   return accessToken;
-}
-
-export async function findSessionById(id: string) {
-  return SessionModel.findById(id);
 }

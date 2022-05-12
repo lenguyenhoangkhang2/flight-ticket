@@ -7,11 +7,12 @@ import AuthPage from "./pages/AuthPage";
 import { default as AdminFlightPage } from "./pages/Admin/FlightPage";
 import { default as AdminReportPage } from "./pages/Admin/ReportPage";
 import { default as AdminConfigurationPage } from "./pages/Admin/Configuration";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="App">
         <Navigation />
         <Container maxWidth="lg">
           <Routes>
@@ -29,8 +30,8 @@ function App() {
             </Route>
           </Routes>
         </Container>
-      </BrowserRouter>
-    </div>
+      </div>
+    </BrowserRouter>
   );
 }
 

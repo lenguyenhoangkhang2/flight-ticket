@@ -39,7 +39,7 @@ const useStyles = makeStyles({
   },
 });
 
-const FlightList = ({ flights }) => {
+const FlightsTable = ({ flights }) => {
   const classes = useStyles();
 
   const columns = useMemo(
@@ -159,4 +159,4 @@ const FlightList = ({ flights }) => {
   );
 };
 
-export default FlightList;
+export default FlightsTable;
