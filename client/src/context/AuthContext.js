@@ -2,18 +2,15 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import authApi from "../api/authApi";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [auth, setAuth] = useState({
-    isAuth: false,
-    token: null,
-    refreshToken: null,
-    user: null,
-  });
+  const [currentUser, setCurrentUser] = useState(null);
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(true);
+
+  const isAuth = !!currentUser;
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,67 +24,81 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     (async () => {
       const token = localStorage.getItem("token");
-      const refreshToken = localStorage.getItem("refreshToken");
-
-      if (token && refreshToken) {
-        setAuth({ ...auth, token, refreshToken });
-      }
 
       if (token) {
         try {
+          console.log("Chay vao day");
           const { data } = await authApi.getCurrentUser();
-          setAuth({ ...auth, user: data });
+
+          setCurrentUser(data);
         } catch (err) {
           setError(err);
         }
+
+        navigate("/");
       }
+      setLoadingInitial(false);
     })();
   }, []);
 
-  const setToken = (token) => {
-    localStorage.setItem("token", token);
-
-    setAuth({ ...auth, token });
-  };
-
-  const setRefreshToken = (refreshToken) => {
-    localStorage.setItem("refreshToken", refreshToken);
-
-    setAuth({ ...auth, refreshToken });
-  };
-
   const login = async (email, password) => {
-    try {
-      const { data } = await authApi.login({
-        email,
-        password,
-      });
+    setLoading(true);
 
-      setToken(data.token);
-      setRefreshToken(data.refreshToken);
-    } catch (err) {}
+    try {
+      const { data } = await authApi.login(email, password);
+
+      const { accessToken, refreshToken } = data;
+
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      try {
+        const { data } = await authApi.getCurrentUser();
+        setCurrentUser(data);
+
+        navigate("/");
+      } catch (err) {
+        setError(err);
+      }
+    } catch (err) {
+      setError(err);
+    }
+
+    setLoading(false);
   };
 
-  const signout = () => {
-    setToken(null);
-    setRefreshToken(null);
-    setAuth({ ...auth, user: null });
+  const logout = async () => {
+    try {
+      await authApi.logout();
+
+      setCurrentUser(null);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+    } catch (err) {
+      setError(err);
+    }
   };
 
   const memoedValue = useMemo(
     () => ({
-      auth,
+      currentUser,
+      loading,
+      error,
       login,
-      signout,
+      logout,
+      isAuth,
     }),
-    [auth, loading, error]
+    [currentUser, loading, error]
   );
 
   return (
-    <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={memoedValue}>
+      {!loadingInitial && children}
+    </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   return useContext(AuthContext);
-}
+};

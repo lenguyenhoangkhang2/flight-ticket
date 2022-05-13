@@ -4,6 +4,7 @@ import { signJwt } from '@/utils/jwt';
 import _ from 'lodash';
 import config from 'config';
 import { DocumentType } from '@typegoose/typegoose';
+import { FilterQuery, UpdateQuery } from 'mongoose';
 
 export async function createSession(user: DocumentType<User>) {
   return SessionModel.create({ user });
@@ -13,8 +14,11 @@ export async function findSessionById(id: string) {
   return SessionModel.findById(id);
 }
 
-export async function removeSession(id: string) {
-  return SessionModel.findByIdAndDelete(id);
+export async function updateSession(
+  query: FilterQuery<DocumentType<Session>>,
+  update: UpdateQuery<DocumentType<Session>>,
+) {
+  return SessionModel.updateOne(query, update);
 }
 
 export async function signRefreshToken(session: DocumentType<Session>) {

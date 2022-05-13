@@ -21,11 +21,14 @@ app.use(deserializeUser);
 app.use(router);
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  res.status(500).send(err.message);
+  res.status(500).send({
+    message: err.message,
+  });
 });
 
 app.listen(port, async () => {
   log.info(`App started at http://localhost:${port}`);
+  console.log('Server listening on port ' + port);
 
   await connectToDb();
   await initialAdmin();

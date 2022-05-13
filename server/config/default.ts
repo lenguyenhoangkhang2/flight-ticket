@@ -3,7 +3,7 @@ export default {
   dbUsername: process.env.DB_USERNAME,
   dbPassword: process.env.DB_PASSWORD,
   logLevel: 'info',
-  accessTokenTtl: '15m',
+  accessTokenTtl: '15s',
   refreshTokenTtl: '1y',
   smtp: {
     user: 'uonij4yknst4qhck@ethereal.email',

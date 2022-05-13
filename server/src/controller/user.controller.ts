@@ -24,10 +24,18 @@ export async function createUserHandler(
   } catch (e: any) {
     // email exists
     if (e.code === 11000) {
-      return res.status(409).send('Account email already exists');
+      return res.status(409).send([
+        {
+          path: ['body', 'email'],
+          message: 'Account email already exists',
+        },
+      ]);
     }
 
-    return res.status(500).send(e.message);
+    return res.status(500).send({
+      path: ['body'],
+      message: e.message,
+    });
   }
 }
 

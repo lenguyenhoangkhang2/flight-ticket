@@ -13,25 +13,24 @@ import {
 import { AccountCircle } from "@mui/icons-material";
 import LoginIcon from "@mui/icons-material/Login";
 import { Link } from "react-router-dom";
-
-const pages = [
-  { name: "tìm chuyến bay", to: "/flights" },
-  { name: "vé đã mua", to: "/tickets" },
-  { name: "QL chuyến bay", to: "/admin/flights", isPrivate: true },
-  { name: "Báo cáo", to: "/admin/reports", isPrivate: true },
-  { name: "Cấu hình", to: "/admin/configs", isPrivate: true },
-];
+import { useAuth } from "../context/AuthContext";
 
 const Navigation = () => {
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [auth, setAuth] = React.useState(false);
+  const { isAuth, currentUser, logout } = useAuth();
+
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const logoutHandler = () => {
+    handleClose();
+    logout();
   };
 
   return (
@@ -44,23 +43,39 @@ const Navigation = () => {
             </Typography>
           </Button>
           <Stack direction="row" flexGrow={1} marginX={1} spacing={1}>
-            {pages.map((page) => {
-              if (!auth && !isAdmin && page.isPrivate) return null;
-
-              return (
+            <Button component={Link} to="/flights" size="large" color="inherit">
+              tìm chuyến bay
+            </Button>
+            {isAuth && currentUser.isAdmin && (
+              <>
                 <Button
                   component={Link}
-                  to={page.to}
+                  to="/admin/flights"
                   size="large"
-                  key={page.name}
                   color="inherit"
                 >
-                  {page.name}
+                  quản lý chuyến bay
                 </Button>
-              );
-            })}
+                <Button
+                  component={Link}
+                  to="/admin/flights"
+                  size="large"
+                  color="inherit"
+                >
+                  báo cáo
+                </Button>
+                <Button
+                  component={Link}
+                  to="/admin/flights"
+                  size="large"
+                  color="inherit"
+                >
+                  cấu hình
+                </Button>
+              </>
+            )}
           </Stack>
-          {auth ? (
+          {isAuth ? (
             <div>
               <IconButton
                 size="large"
@@ -89,7 +104,7 @@ const Navigation = () => {
                 onClose={handleClose}
               >
                 <MenuItem onClick={handleClose}>Thông tin tài khoản</MenuItem>
-                <MenuItem onClick={handleClose}>Đăng xuất</MenuItem>
+                <MenuItem onClick={logoutHandler}>Đăng xuất</MenuItem>
               </Menu>
             </div>
           ) : (

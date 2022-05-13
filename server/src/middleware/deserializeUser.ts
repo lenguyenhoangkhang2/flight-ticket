@@ -1,7 +1,12 @@
+import { findSessionById } from '@/service/auth.service';
 import { verifyJwt } from '@/utils/jwt';
 import { Request, Response, NextFunction } from 'express';
 
 const deserializeUser = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.path === '/api/sessions/refresh') {
+    return next();
+  }
+
   const accessToken = (req.headers.authorization || '').replace(/^Bearer\s/, '');
 
   if (!accessToken) {
@@ -11,19 +16,24 @@ const deserializeUser = async (req: Request, res: Response, next: NextFunction) 
   let decoded;
 
   try {
-    decoded = verifyJwt(accessToken, 'accessTokenPublicKey');
+    decoded = verifyJwt<{ sessionId: string }>(accessToken, 'accessTokenPublicKey');
   } catch (err: any) {
-    return res.send({
-      code: 401,
-      message: err.message,
+    return res.status(401).send({
+      message: 'jwt error',
     });
   }
 
   if (decoded) {
-    res.locals.user = decoded;
+    const session = await findSessionById(decoded?.sessionId);
 
-    return next();
+    if (!session?.valid) {
+      return res.status(401).send({
+        message: 'Session is not valid',
+      });
+    }
   }
+
+  res.locals.user = decoded;
 
   return next();
 };

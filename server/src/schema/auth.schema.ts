@@ -1,14 +1,22 @@
-import { object, string, TypeOf } from "zod";
+import { object, string, TypeOf } from 'zod';
 
 export const createSessionSchema = object({
   body: object({
     email: string({
-      required_error: "Email is required",
+      required_error: 'Email is required',
     }).email(),
     password: string({
-      required_error: "Password is required",
-    }).min(6, "Invalid email or password"),
+      required_error: 'Password is required',
+    }).min(6),
   }),
 });
 
-export type CreateSessionInput = TypeOf<typeof createSessionSchema>["body"];
+export const refreshTokenSchema = object({
+  body: object({
+    refreshToken: string({
+      required_error: 'RefreshToken is required',
+    }),
+  }),
+});
+
+export type CreateSessionInput = TypeOf<typeof createSessionSchema>['body'];

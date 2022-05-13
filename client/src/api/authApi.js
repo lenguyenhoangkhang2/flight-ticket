@@ -1,11 +1,14 @@
 import axiosClient from "./axiosClient";
 
-const getCurrentUser = () => {
+const getLocalToken = () => {
   const token = localStorage.getItem("token");
+  return token;
+};
 
+const getCurrentUser = () => {
   return axiosClient.get("/api/users/me", {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${getLocalToken()}`,
     },
   });
 };
@@ -17,7 +20,40 @@ const login = (email, password) => {
   });
 };
 
-export default {
+const logout = () => {
+  return axiosClient.post(
+    "/api/sessions/logout",
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${getLocalToken()}`,
+      },
+    }
+  );
+};
+
+const refreshToken = () => {
+  return axiosClient.post(
+    "/api/sessions/refresh",
+    {},
+    {
+      headers: {
+        "x-refresh": localStorage.getItem("refreshToken"),
+      },
+    }
+  );
+};
+
+const signup = (data) => {
+  return axiosClient.post("/api/users", data);
+};
+
+const authApi = {
   getCurrentUser,
   login,
+  logout,
+  refreshToken,
+  signup,
 };
+
+export default authApi;
