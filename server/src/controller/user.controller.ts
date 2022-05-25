@@ -4,6 +4,7 @@ import log from '@/utils/logger';
 import sendEmail from '@/utils/mailer';
 import { Request, Response } from 'express';
 import { nanoid } from 'nanoid';
+import envConfig from 'config';
 
 export async function createUserHandler(
   req: Request<Record<string, never>, Record<string, never>, CreateUserInput>,
@@ -17,7 +18,9 @@ export async function createUserHandler(
       from: 'test@example.com',
       to: user.email,
       subject: 'Please verify your account',
-      text: `verification code ${user.verificationCode}. Id: ${user._id}`,
+      text: `Click link to verify your account. ${envConfig.get<string>('clientHost')}/verify-account/${
+        user.verificationCode
+      }/${user._id}`,
     });
 
     return res.send('User successfully created');
@@ -39,28 +42,25 @@ export async function createUserHandler(
   }
 }
 
-export async function verifyUserHandler(req: Request<VerifyUserInput>, res: Response) {
-  const id = req.params.id;
-  const verificationCode = req.params.verificationCode;
+export async function verifyUserHandler(req: Request<any, any, VerifyUserInput>, res: Response) {
+  const { id, verificationCode } = req.body;
 
-  try {
-    const user = await findUserById(id);
+  const user = await findUserById(id);
 
-    if (!user) {
-      return res.send('Could not verify user');
-    }
+  if (!user) {
+    return res.status(400).send('Could not verify user');
+  }
 
-    if (user.verified) {
-      return res.send('User is already verified');
-    }
+  if (user.verified) {
+    return res.status(400).send('User is already verified');
+  }
 
-    if (user.verificationCode === verificationCode) {
-      user.verified = true;
-      await user.save();
-      return res.send('User seccessfully verified');
-    }
-  } catch (err: any) {
-    return res.send('Could not verify user');
+  if (user.verificationCode === verificationCode) {
+    user.verified = true;
+    await user.save();
+    res.send('User seccessfully verified');
+  } else {
+    res.status(400).send('Could not verify user');
   }
 }
 
@@ -68,18 +68,22 @@ export async function forgotPassswordHandler(
   req: Request<Record<string, never>, Record<string, never>, ForgotPasswordInput>,
   res: Response,
 ) {
-  const message = 'If a user with that email is registerd, you will receive a password reset email.';
+  const message = 'You will receive a password reset email.';
 
   const { email } = req.body;
   try {
     const user = await findUserByEmail(email);
 
     if (!user) {
-      throw Error(`User with email ${email} does not exists`);
+      return res.status(400).send({
+        message: `User with email ${email} does not exists`,
+      });
     }
 
     if (!user.verified) {
-      throw Error(`User is not verified`);
+      return res.status(400).send({
+        message: 'User is not verified',
+      });
     }
 
     const passwordResetCode = nanoid();
@@ -90,11 +94,13 @@ export async function forgotPassswordHandler(
       to: user.email,
       from: 'test@example.com',
       subject: 'Reset your password',
-      text: `Password reset code: ${passwordResetCode}. Id ${user._id}`,
+      text: `Link to reset your password ${envConfig.get<string>('clientHost')}/reset-password/${
+        user._id
+      }/${passwordResetCode}`,
     });
 
     log.debug(`Password reset email send to ${email}`);
-    return res.send(message);
+    return res.send({ message });
   } catch (err: any) {
     log.debug(err.message);
     return res.status(500).send(err.message);

@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post('/api/users', validateResource(createUseSchema), createUserHandler);
 
-router.get('/api/users/verify/:id/:verificationCode', validateResource(verifyUserSchema), verifyUserHandler);
+router.post('/api/users/verify', validateResource(verifyUserSchema), verifyUserHandler);
 
 router.post('/api/users/forgot-password', validateResource(forgotPasswordSchema), forgotPassswordHandler);
 

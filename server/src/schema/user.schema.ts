@@ -24,7 +24,7 @@ export const createUseSchema = object({
 });
 
 export const verifyUserSchema = object({
-  params: object({
+  body: object({
     id: string(),
     verificationCode: string(),
   }),
@@ -49,14 +49,14 @@ export const resetPasswordSchema = object({
       required_error: 'Password confirmation is required',
     }),
   }).refine((data) => data.password === data.passwordConfirmation, {
-    message: 'Password do not match',
+    message: 'Password confirm do not match',
     path: ['passwordConfirmation'],
   }),
 });
 
 export type CreateUserInput = TypeOf<typeof createUseSchema>['body'];
 
-export type VerifyUserInput = TypeOf<typeof verifyUserSchema>['params'];
+export type VerifyUserInput = TypeOf<typeof verifyUserSchema>['body'];
 
 export type ForgotPasswordInput = TypeOf<typeof forgotPasswordSchema>['body'];
 

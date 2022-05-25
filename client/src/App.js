@@ -12,6 +12,8 @@ import OrderedPage from "./pages/OrderedPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AirportPage from "./pages/Admin/AirportPage";
 import SeatClassPage from "./pages/Admin/SeatClassPage";
+import VerifyAccountPage from "./pages/VerifyAccountPage";
+import ResetPasswodPage from "./pages/ResetPasswordPage";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ThemeProvider } from "@mui/styles";
@@ -37,6 +39,17 @@ function App() {
                     path="signup"
                     element={<AuthPage isSignupForm={true} />}
                   />
+                  <Route
+                    path="verify-account/:verificationCode/:userId"
+                    element={<VerifyAccountPage />}
+                  />
+                  <Route path="reset-password">
+                    <Route index element={<ResetPasswodPage />} />
+                    <Route
+                      path=":userId/:passwordResetCode"
+                      element={<ResetPasswodPage />}
+                    />
+                  </Route>
                   <Route
                     path="admin"
                     element={

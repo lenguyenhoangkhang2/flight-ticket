@@ -40,6 +40,9 @@ const flightColumns = ({ expander }) => [
       const localDepartureTime = new Date(departureTime);
       const localArrivalTime = new Date(arrivalTime);
 
+      return { localDepartureTime, localArrivalTime };
+    },
+    Cell: ({ value: { localDepartureTime, localArrivalTime } }) => {
       const hours = differenceInHours(localArrivalTime, localDepartureTime);
       const minutes =
         differenceInMinutes(localArrivalTime, localDepartureTime) - 60 * hours;
@@ -53,6 +56,7 @@ const flightColumns = ({ expander }) => [
       } else {
         duration = `${hours}h ${minutes}m`;
       }
+
       return duration;
     },
     id: "duration",
@@ -70,6 +74,7 @@ const flightColumns = ({ expander }) => [
     Header: () => null,
     id: "expander",
     Cell: (value) => expander(value),
+    disableSortBy: true,
   },
 ];
 

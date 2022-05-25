@@ -6,6 +6,7 @@ import {
   Typography,
   Alert,
   AlertTitle,
+  Stack,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useState } from "react";
@@ -266,12 +267,25 @@ export default function AuthPage({ isSignupForm = false }) {
           </Link>
         </Typography>
       ) : (
-        <Typography>
-          Chưa có tài khoản?&nbsp;
-          <Link style={{ textDecoration: "none" }} to="/signup">
-            Đăng ký
-          </Link>
-        </Typography>
+        <>
+          <Stack direction="row">
+            <Typography>Chưa có tài khoản?&nbsp;</Typography>
+            <Typography
+              as={Link}
+              to="/signup"
+              style={{ textDecoration: "none" }}
+            >
+              Đăng ký
+            </Typography>
+          </Stack>
+          <Typography
+            as={Link}
+            to="/reset-password"
+            style={{ textDecoration: "none" }}
+          >
+            Quên mật khẩu?
+          </Typography>
+        </>
       )}
     </Container>
   );

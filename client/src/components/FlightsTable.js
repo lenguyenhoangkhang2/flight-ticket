@@ -9,9 +9,8 @@ import {
   TableSortLabel,
   Typography,
 } from "@mui/material";
-import { Box } from "@mui/system";
 import React from "react";
-import { useSortBy, useTable, useExpanded } from "react-table";
+import { useTable, useExpanded } from "react-table";
 
 const FlightsTable = ({
   columns: flightColumns,
@@ -19,7 +18,7 @@ const FlightsTable = ({
   renderRowSubComponent,
   hiddenColumns,
   headerTitle,
-  useStyles = () => {},
+  useStyles = () => { },
 }) => {
   const classes = useStyles();
 
@@ -39,7 +38,6 @@ const FlightsTable = ({
         ...(hiddenColumns && { hiddenColumns }),
       },
     },
-    useSortBy,
     useExpanded
   );
 
@@ -59,15 +57,8 @@ const FlightsTable = ({
           {headerGroups.map((headerGroup) => (
             <TableRow align="center" {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map((column) => (
-                <TableCell
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
-                >
-                  <TableSortLabel
-                    active={column.isSorted}
-                    direction={column.isSortedDesc ? "desc" : "asc"}
-                  >
-                    {column.render("Header")}
-                  </TableSortLabel>
+                <TableCell {...column.getHeaderProps()}>
+                  {column.render("Header")}
                 </TableCell>
               ))}
             </TableRow>

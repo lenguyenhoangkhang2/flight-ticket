@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const user_routes_1 = __importDefault(require("@/routes/user.routes"));
+const auth_routes_1 = __importDefault(require("@/routes/auth.routes"));
+const flight_routes_1 = __importDefault(require("@/routes/flight.routes"));
+const seat_routes_1 = __importDefault(require("@/routes/seat.routes"));
+const airport_routes_1 = __importDefault(require("@/routes/airport.routes"));
+const config_routes_1 = __importDefault(require("@/routes/config.routes"));
+const report_routes_1 = __importDefault(require("@/routes/report.routes"));
+const router = express_1.default.Router();
+router.get('/healthcheck', (_, res) => res.sendStatus(200));
+router.use(auth_routes_1.default);
+router.use(user_routes_1.default);
+router.use(config_routes_1.default);
+router.use(seat_routes_1.default);
+router.use(airport_routes_1.default);
+router.use(flight_routes_1.default);
+router.use(report_routes_1.default);
+exports.default = router;
