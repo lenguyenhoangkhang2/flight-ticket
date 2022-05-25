@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
-import { getConfigrugationValue } from '@/service/config.service';
+import { getConfigrugationValue, updateConfig } from '@/service/config.service';
+import { updateConfigInput } from '@/schema/config.schema';
 
-export async function getConfigurations(_req: Request, res: Response) {
-  try {
-    const configs = await getConfigrugationValue();
+export async function getConfigurationHandler(_req: Request, res: Response) {
+  const configs = await getConfigrugationValue();
 
-    res.send(configs);
-  } catch (err) {
-    res.status(500).send(err);
-  }
+  res.send(configs);
+}
+
+export async function updateConfigurationHandler(req: Request<any, any, updateConfigInput>, res: Response) {
+  await updateConfig(req.body);
+
+  res.send('Cập nhật cấu hình cài đặt thành công');
 }

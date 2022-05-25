@@ -10,34 +10,22 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
-  const isAuth = !!currentUser;
-
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (error) {
-      setError(null);
-    }
+    setError(null);
   }, [location.pathname]);
 
   useEffect(() => {
     (async () => {
-      const token = localStorage.getItem("token");
+      try {
+        const { data } = await authApi.getCurrentUser();
 
-      if (token) {
-        try {
-          console.log("Chay vao day");
-          const { data } = await authApi.getCurrentUser();
-
-          setCurrentUser(data);
-        } catch (err) {
-          setError(err);
-        }
-
-        navigate("/");
+        setCurrentUser(data);
+      } finally {
+        setLoadingInitial(false);
       }
-      setLoadingInitial(false);
     })();
   }, []);
 
@@ -45,12 +33,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
 
     try {
-      const { data } = await authApi.login(email, password);
-
-      const { accessToken, refreshToken } = data;
-
-      localStorage.setItem("token", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      await authApi.login(email, password);
 
       try {
         const { data } = await authApi.getCurrentUser();
@@ -72,9 +55,7 @@ export function AuthProvider({ children }) {
       await authApi.logout();
 
       setCurrentUser(null);
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
+      navigate("/login");
     } catch (err) {
       setError(err);
     }
@@ -87,7 +68,7 @@ export function AuthProvider({ children }) {
       error,
       login,
       logout,
-      isAuth,
+      isAuth: !!currentUser,
     }),
     [currentUser, loading, error]
   );

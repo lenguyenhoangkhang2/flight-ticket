@@ -2,10 +2,11 @@ import { Stopover, SeatsOfFlight } from './../model/flight.model';
 import { Airport } from '@/model/airport.model';
 import FlightModel, { Flight, Ticket } from '@/model/flight.model';
 import { DocumentType, isDocument } from '@typegoose/typegoose';
-import dayjs from 'dayjs';
-import _, { result } from 'lodash';
+import _ from 'lodash';
 import { User } from '@/model/user.model';
 import { getConfigrugationValue } from './config.service';
+import { FilterQuery } from 'mongoose';
+import log from '@/utils/logger';
 
 export async function createFlight(flight: Partial<Flight>) {
   return FlightModel.create(flight);
@@ -27,13 +28,8 @@ export async function updateFlightById(flightId: string, flight: Partial<Flight>
   return FlightModel.findByIdAndUpdate(flightId, flight);
 }
 
-export async function getFlightsByDate(departtureDate: Date) {
-  return FlightModel.find({
-    departureTime: {
-      $gte: dayjs(departtureDate).startOf('day'),
-      $lte: dayjs(departtureDate).endOf('day'),
-    },
-  })
+export async function getFlightsWithFilter(query: FilterQuery<DocumentType<Flight>>) {
+  return FlightModel.find(query)
     .populate<{ fromLocation: Airport }>({ path: 'fromLocation', select: '-__v -createdAt -updatedAt' })
     .populate<{ toLocation: Airport }>({ path: 'toLocation', select: '-__v -createdAt -updatedAt' })
     .populate<{ stopovers: Stopover[] }>({ path: 'stopovers.airport', select: '-__v -createdAt -updatedAt' })
@@ -74,17 +70,17 @@ export async function getFlightOrderedByUser(userId: string) {
     .populate({ path: 'toLocation', select: '-__v -createdAt -updatedAt' })
     .populate({ path: 'stopovers.airport', select: '-__v -createdAt -updatedAt' })
     .populate('tickets.user')
+    .populate({ path: 'tickets.seatClass', select: '-__v' })
     .select('-__v');
 
   const results = flights.map((flight) => {
-    flight.tickets = flight.tickets!.filter((ticket) => {
+    flight.tickets = flight.tickets?.filter((ticket) => {
       if (!isDocument(ticket.user)) {
         throw new Error('tickets.user not doc');
       }
 
       return ticket.user._id.toString() === userId;
     });
-
     return flight;
   });
 
@@ -95,7 +91,7 @@ export async function updateTicketsOrderedToPaidByUserAndFlight(
   user: DocumentType<User>,
   flight: DocumentType<Flight>,
 ) {
-  flight.tickets = flight.tickets!.map((ticket) => {
+  flight.tickets = flight.tickets?.map((ticket) => {
     if (!isDocument(ticket.user)) {
       throw new Error('tickets.user not doc');
     }
@@ -111,13 +107,15 @@ export async function updateTicketsOrderedToPaidByUserAndFlight(
 }
 
 export async function cancelExpiredTickets() {
+  log.info('Cancel Expired Tickets');
+
   const config = await getConfigrugationValue();
 
   if (!config) throw new Error('Configuration environment variable not found');
 
   const flights = await FlightModel.find({
-    $expr: {
-      $gte: [Date.now(), '$timeForPaymentTicket'],
+    timeForPaymentTicket: {
+      $lte: new Date(),
     },
   });
 
@@ -125,7 +123,7 @@ export async function cancelExpiredTickets() {
 
   return Promise.all(
     flights.map((flight) => {
-      flight.tickets = flight.tickets!.map((ticket) => {
+      flight.tickets = flight.tickets?.map((ticket) => {
         if (!ticket.paid) {
           ticket.isValid = false;
         }

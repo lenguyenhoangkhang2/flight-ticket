@@ -1,7 +1,7 @@
 import ConfigurationModel from '@/model/configuration.model';
 import { existsConfig } from '@/service/config.service';
-import { logger } from '@typegoose/typegoose/lib/logSettings';
 import config from 'config';
+import log from './logger';
 
 const initialConfig = async () => {
   try {
@@ -18,7 +18,7 @@ const initialConfig = async () => {
     const exists = await existsConfig();
     if (!exists) {
       await ConfigurationModel.create(initConfig);
-      logger.info('Initial configurations are saved successfully to DB');
+      log.info('Initial configurations are saved successfully to DB');
     }
   } catch (err: any) {
     throw new Error('Initial Config Error!' + err.message);

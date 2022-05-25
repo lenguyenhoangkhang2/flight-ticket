@@ -1,5 +1,6 @@
 import {
   addTicketsFlightHandler,
+  createCheckoutSessionHandler,
   createFlightHandler,
   getFlightHandler,
   getFlightsHandler,
@@ -12,6 +13,7 @@ import requireUser from '@/middleware/requireUser';
 import validateResource from '@/middleware/validateResourse';
 import {
   addFlightTicketSchema,
+  createCheckoutSessionSchema,
   createFlightSchema,
   getFlightShema,
   getFlightsSchema,
@@ -36,8 +38,15 @@ router.post(
   addTicketsFlightHandler,
 );
 
-router.get('/api/flights/tickets/me', requireUser, getFlightsOrderedHandler);
+router.get('/api/flights/ordered/me', requireUser, getFlightsOrderedHandler);
 
 router.put('/api/flights/:flightId/tickets/paid/:userId', requireAdmin, updateTicketsOrderedToPaidHandler);
+
+router.post(
+  '/api/flights/:flightId/tickets/checkout-session',
+  requireUser,
+  validateResource(createCheckoutSessionSchema),
+  createCheckoutSessionHandler,
+);
 
 export default router;

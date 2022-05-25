@@ -15,7 +15,7 @@ export const createFlightSchema = object({
   body: object({
     airline: string({
       required_error: 'Airline is required',
-    }),
+    }).nonempty({ message: 'Airline name is required' }),
 
     fromLocation: any({
       required_error: 'From Location is required',
@@ -43,7 +43,7 @@ export const createFlightSchema = object({
 
     price: number({
       required_error: 'Price is required',
-    }).min(0, { message: 'Invalid price' }),
+    }).min(1, { message: 'Invalid price' }),
 
     stopovers: array(
       object({
@@ -57,7 +57,11 @@ export const createFlightSchema = object({
         }),
         note: string().optional(),
       }),
-    ).default([]),
+    )
+      .default([])
+      .refine((val) => val.length === _.uniqBy(val, 'airport').length, {
+        message: 'Exist duplicate stopovers location',
+      }),
 
     seats: object({
       type: string({
@@ -77,9 +81,11 @@ export const createFlightSchema = object({
   })
     .refine(({ departureTime, arrivalTime }) => departureTime < arrivalTime, {
       message: 'Departure time must before Arrival time',
+      path: ['departureTime'],
     })
     .refine(({ fromLocation, toLocation }) => fromLocation !== toLocation, {
-      message: 'fromLocation must diffirent toLocation',
+      message: 'toLocation must diffirent fromLocation',
+      path: ['toLocation'],
     })
     .refine(
       ({ fromLocation, toLocation, stopovers }) => {
@@ -99,9 +105,21 @@ export const updateFlightSchema = object({
 
 export const getFlightsSchema = object({
   query: object({
-    departureDate: string({
-      required_error: 'Deaparture Date is required',
-    }).refine((val) => Date.parse(val), { message: 'Invalid Date' }),
+    departureDate: string()
+      .refine((val) => Date.parse(val), { message: 'Invalid Date' })
+      .optional(),
+
+    fromLocation: string()
+      .refine(async (val) => !!(await existsByAirportId(val)), {
+        message: 'Airport location not found',
+      })
+      .optional(),
+
+    toLocation: string()
+      .refine(async (val) => !!(await existsByAirportId(val)), {
+        message: 'Airport location not found',
+      })
+      .optional(),
   }),
 });
 
@@ -140,6 +158,15 @@ export const updateTicketsToPaidSchema = object({
   }),
 });
 
+export const createCheckoutSessionSchema = object({
+  params: object({
+    flightId,
+  }),
+  body: object({
+    ticketIds: string().array().nonempty(),
+  }),
+});
+
 export type createFlightInput = TypeOf<typeof createFlightSchema>['body'];
 
 export type updateFlightInput = TypeOf<typeof updateFlightSchema>;
@@ -147,6 +174,10 @@ export type updateFlightInput = TypeOf<typeof updateFlightSchema>;
 export type getFlightsInput = TypeOf<typeof getFlightsSchema>;
 
 export type updateTicketsToPaidInput = TypeOf<typeof updateTicketsToPaidSchema>['params'];
+
+export type createCheckoutSessionInput = TypeOf<typeof createCheckoutSessionSchema>['body'];
+
+export type createCheckoutSessionParam = TypeOf<typeof createCheckoutSessionSchema>['params'];
 
 export type addFlightTicketInput = TypeOf<typeof addFlightTicketSchema>;
 

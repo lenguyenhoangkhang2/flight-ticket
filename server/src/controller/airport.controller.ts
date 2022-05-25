@@ -27,7 +27,7 @@ export async function createAirportHandler(req: Request<any, any, createAirportI
 
     if (airportsAmount >= config.airportAmountMax)
       return res.status(400).send({
-        message: `Amount of airports has reached the limit ${config.airportAmountMax}`,
+        message: `Amount of airports has reached the limit`,
       });
 
     const airport = await createAirport(req.body);
@@ -46,7 +46,7 @@ export async function updateAirportHandler(req: Request<verifyAirportIdInput, an
     const exists = await existsByAirportNameAndExceptId(name, airportId);
 
     if (exists) {
-      return res.send({
+      return res.status(400).send({
         message: 'Name is exists',
         path: ['body', 'name'],
       });

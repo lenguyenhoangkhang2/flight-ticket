@@ -1,6 +1,9 @@
 import { Ticket } from '@/model/flight.model';
+import { customAlphabet } from 'nanoid';
 import {
   addFlightTicketInput,
+  createCheckoutSessionInput,
+  createCheckoutSessionParam,
   createFlightInput,
   getFlightInput,
   getFlightsInput,
@@ -12,7 +15,7 @@ import {
   addTicketsToFlight,
   createFlight,
   getFlightById,
-  getFlightsByDate,
+  getFlightsWithFilter,
   getFlightOrderedByUser,
   updateFlightById,
   updateTicketsOrderedToPaidByUserAndFlight,
@@ -28,14 +31,32 @@ import { Airport } from '@/model/airport.model';
 import { Seat } from '@/model/seat.model';
 import _ from 'lodash';
 import { findUserById } from '@/service/user.service';
+import Stripe from 'stripe';
+import envConfig from 'config';
+import { signJwt } from '@/utils/jwt';
 
 dayjs.extend(duration);
 
+const nanoid = customAlphabet('1234567890ABCDEFGHZXS', 8);
+
+const stripe = new Stripe(envConfig.get<string>('stripeSecretKey'), {
+  apiVersion: '2020-08-27',
+});
+
 export async function getFlightsHandler(req: Request<any, any, any, getFlightsInput['query']>, res: Response) {
   try {
-    const { departureDate } = req.query;
+    const { departureDate, fromLocation, toLocation } = req.query;
 
-    const flights = await getFlightsByDate(new Date(departureDate));
+    const flights = await getFlightsWithFilter({
+      ...(departureDate && {
+        departureTime: {
+          $gte: dayjs(departureDate).startOf('day'),
+          $lte: dayjs(departureDate).endOf('day'),
+        },
+      }),
+      ...(fromLocation && { fromLocation: fromLocation }),
+      ...(toLocation && { toLocation: toLocation }),
+    });
 
     if (!res.locals.user?.isAdmin) {
       return res.send(flights.map((flight) => _.omit(flight.toObject(), ['tickets'])));
@@ -246,11 +267,11 @@ export async function addTicketsFlightHandler(
     if (!flight) throw new Error('Flight not found');
 
     if (dayjs(flight.departureTime).isBefore(dayjs())) {
-      return res.status(400).send('Flight in past');
+      return res.status(400).send([{ path: [], message: 'Flight in past' }]);
     }
 
     if (dayjs(flight.departureTime).subtract(config.timeLimitBuyTicket, 'day').isBefore(dayjs(), 'day')) {
-      return res.status(400).send('Now is expiration date for the order');
+      return res.status(400).send([{ path: [], message: 'Now is expiration date for the order' }]);
     }
 
     const seatsOfFlight = flight.seats.map((seat) => {
@@ -314,9 +335,10 @@ export async function addTicketsFlightHandler(
       for (let i = 0; i < amount; i++) {
         const ticket = new Ticket();
 
+        ticket._id = nanoid();
         ticket.seatClass = seatOfFlight.type;
         ticket.user = res.locals.user._id;
-        ticket.price = +((flight.price * (100 + seatOfFlight.extraFee)) / 100).toFixed(2);
+        ticket.price = Math.round((flight.price * (100 + seatOfFlight.extraFee)) / 100 / 10000) * 10000;
 
         tickets.push(ticket);
       }
@@ -324,31 +346,140 @@ export async function addTicketsFlightHandler(
 
     await addTicketsToFlight(flightId, tickets);
 
-    res.status(201).send('Tickets is successfully added. Please payment before the due time');
+    const ticketIds = tickets.map(({ _id }) => _id);
+
+    res.status(201).send(ticketIds);
   } catch (err: any) {
     res.status(500).send(err.message);
   }
 }
 
-export async function getFlightsOrderedHandler(req: Request, res: Response) {
-  try {
-    const userId = res.locals.user._id;
+export async function createCheckoutSessionHandler(
+  req: Request<createCheckoutSessionParam, any, createCheckoutSessionInput>,
+  res: Response,
+) {
+  const userId = res.locals.user._id;
+  const flightId = req.params.flightId;
+  const ticketIds = [...req.body.ticketIds];
 
-    const flights = await getFlightOrderedByUser(userId);
+  const flight = await getFlightById(flightId);
 
-    const result = flights.map((flight) => {
-      const leanFlight = flight.toObject();
-
-      return {
-        ...leanFlight,
-        tickets: leanFlight.tickets?.map((ticket) => _.omit(ticket, ['user', '__v'])),
-      };
-    });
-
-    res.send(result);
-  } catch (err: any) {
-    res.status(500).send(err.message);
+  if (!flight) {
+    return res.status(400).send([
+      {
+        path: ['params', 'flightId'],
+        message: 'Flight not found with flightId: ' + flightId,
+      },
+    ]);
   }
+
+  const tickets: {
+    price: number;
+    seatClass: DocumentType<Seat>;
+    quantity: number;
+  }[] = [];
+
+  ticketIds.forEach((ticketId, i) => {
+    let errorMessage;
+
+    const ticketIndex = flight.tickets?.findIndex(({ _id }) => _id === ticketId);
+
+    if (ticketIndex === -1) errorMessage = 'Ticket ID is not valid';
+
+    const ticket = flight.tickets[ticketIndex];
+
+    if (ticket.paid) errorMessage = 'Ticket is paid';
+
+    if (!ticket.isValid) errorMessage = 'Ticket is canceled';
+
+    if (errorMessage) {
+      return res.status(400).send([
+        {
+          path: ['body', 'ticketIds', i],
+          message: errorMessage,
+        },
+      ]);
+    }
+
+    if (!isDocument(ticket.user)) {
+      throw new Error('ticket.user not doc');
+    }
+
+    if (!isDocument(ticket.seatClass)) {
+      throw new Error('ticket.seatClass not doc');
+    }
+
+    const seatClass = ticket.seatClass as DocumentType<Seat>;
+    const price = ticket.price;
+
+    if (ticket.user._id.toString() === userId) {
+      const index = tickets.findIndex((i) => i.seatClass._id === seatClass._id);
+
+      if (index === -1) {
+        tickets.push({
+          seatClass,
+          price,
+          quantity: 1,
+        });
+      } else {
+        tickets[index].quantity++;
+      }
+    }
+  });
+
+  const sessionExpiresSec = +envConfig.get<number>('stripeSessionExpiresTime');
+
+  const session = await stripe.checkout.sessions.create({
+    success_url: `${envConfig.get<string>('clientHost')}/user/ordered`,
+    cancel_url: `${envConfig.get<string>('clientHost')}/user/ordered`,
+    payment_method_types: ['card'],
+    mode: 'payment',
+    payment_intent_data: {
+      metadata: {
+        token: signJwt(
+          {
+            flightId,
+            ticketIds,
+          },
+          'accessTokenPrivateKey',
+          {
+            expiresIn: sessionExpiresSec,
+          },
+        ),
+      },
+    },
+    customer_email: res.locals.user.email,
+    line_items: tickets.map((ticket) => ({
+      price_data: {
+        currency: 'VND',
+        product_data: {
+          name: ticket.seatClass?.className,
+        },
+        unit_amount: ticket.price,
+      },
+      quantity: ticket.quantity,
+    })),
+    expires_at: Math.floor(Date.now() / 1000) + sessionExpiresSec,
+  });
+
+  return res.status(200).send({ paymentUrl: session.url });
+}
+
+export async function getFlightsOrderedHandler(req: Request, res: Response) {
+  const userId = res.locals.user._id;
+
+  const flights = await getFlightOrderedByUser(userId);
+
+  const result = flights.map((flight) => {
+    const leanFlight = flight.toObject();
+
+    return {
+      ...leanFlight,
+      tickets: leanFlight.tickets?.map((ticket) => _.omit(ticket, ['user', '__v'])),
+    };
+  });
+
+  res.send(result);
 }
 
 export async function updateTicketsOrderedToPaidHandler(req: Request<updateTicketsToPaidInput>, res: Response) {
@@ -374,7 +505,9 @@ export async function updateTicketsOrderedToPaidHandler(req: Request<updateTicke
 
     if (validateErrors.length) return res.status(400).send(validateErrors);
 
-    await updateTicketsOrderedToPaidByUserAndFlight(user!, flight!);
+    if (flight && user) {
+      await updateTicketsOrderedToPaidByUserAndFlight(user, flight);
+    }
 
     res.send('Update tickets ordered to paid successfully!');
   } catch (err: any) {

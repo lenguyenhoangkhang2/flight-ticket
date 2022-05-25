@@ -18,7 +18,7 @@ export async function createSeatHandler(req: Request<any, any, createSeatInput>,
 
     if (seatsAmount >= config.seatClassAmountMax)
       return res.status(400).send({
-        message: `Amount of SeatClass has reached the limit ${config.seatClassAmountMax}`,
+        message: `Amount of SeatClass has reached the limit`,
       });
 
     const seat = await createSeat(req.body);
@@ -36,7 +36,7 @@ export async function updateSeatHandler(req: Request<verifySeatIdInput, any, upd
 
     const exists = await existsBySeatClassnameAndExceptId(className, seatId);
     if (exists) {
-      return res.send([
+      return res.status(400).send([
         {
           message: 'Class name is exists',
           path: ['body', 'className'],

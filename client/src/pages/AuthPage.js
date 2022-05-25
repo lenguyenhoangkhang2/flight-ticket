@@ -20,7 +20,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function Auth({ isSignupForm = false }) {
+export default function AuthPage({ isSignupForm = false }) {
   const classes = useStyles();
 
   const { loading, login, error } = useAuth();
@@ -33,7 +33,7 @@ export default function Auth({ isSignupForm = false }) {
     identityCardNumber: "",
   });
   const [signupErrors, setSignupErrors] = useState(null);
-  const [signupSuccess, setSignupSuccess] = useState(true);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
 
   const errors = isSignupForm ? signupErrors : error;
@@ -237,6 +237,24 @@ export default function Auth({ isSignupForm = false }) {
                 ? "Đăng Ký"
                 : "Đăng Nhập"}
             </Button>
+            {error && zodValidate(error.response.data, ["body"]).hasError && (
+              <Alert
+                style={{ marginTop: 10, border: "1px solid #e53935" }}
+                severity="error"
+              >
+                {zodValidate(error.response.data, ["body"]).message}
+              </Alert>
+            )}
+            {isSignupForm &&
+              signupErrors &&
+              zodValidate(signupErrors.response.data, ["body"]).hasError && (
+                <Alert
+                  style={{ marginTop: 10, border: "1px solid #e53935" }}
+                  severity="error"
+                >
+                  {zodValidate(signupErrors.response.data, ["body"]).message}
+                </Alert>
+              )}
           </Grid>
         </Grid>
       </form>

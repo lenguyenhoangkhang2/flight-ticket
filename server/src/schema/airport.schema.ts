@@ -6,11 +6,13 @@ export const createAirportSchema = object({
     name: string({
       required_error: 'Name is required',
     }).refine(async (val) => !(await existsByAirportName(val)), {
-      message: 'Class name is exist',
+      message: 'Aiport name is exist',
     }),
 
     location: string({
       required_error: 'Location is required',
+    }).nonempty({
+      message: 'Location is not empty',
     }),
   }),
 });
@@ -26,6 +28,13 @@ export const updateAirportSchema = object({
   body: createAirportSchema.shape.body.extend({
     name: string({
       required_error: 'Name is required',
+    }).min(1, {
+      message: 'Name is not empty',
+    }),
+    location: string({
+      required_error: 'Location is required',
+    }).min(1, {
+      message: 'Location is not empty',
     }),
   }),
 });

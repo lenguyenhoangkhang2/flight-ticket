@@ -1,9 +1,9 @@
 export default {
-  port: 8000,
+  port: 8080,
   dbUsername: process.env.DB_USERNAME,
   dbPassword: process.env.DB_PASSWORD,
   logLevel: 'info',
-  accessTokenTtl: '15s',
+  accessTokenTtl: '15m',
   refreshTokenTtl: '1y',
   smtp: {
     user: 'uonij4yknst4qhck@ethereal.email',
@@ -28,4 +28,8 @@ export default {
     timeLimitBuyTicket: process.env.TIME_LIMIT_BUY_TICKET,
     timeLimitCancelTicket: process.env.TIME_LIMIT_CANCEL_TICKET,
   },
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+  clientHost: process.env.CLIENT_HOST,
+  stripeEndpointSecret: process.env.STRIPE_ENDPOINT_SECRET,
+  stripeSessionExpiresTime: process.env.STRIPE_SESSION_EXPIRES_TIME,
 };

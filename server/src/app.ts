@@ -11,11 +11,20 @@ import initialConfig from './utils/initialConfig';
 import * as cron from 'node-cron';
 import { cancelExpiredTickets } from './service/flight.service';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { stripeWebHookHandler } from './controller/webhook.controller';
 
 const app = express();
-const port = config.get('port');
 
-app.use(cors());
+app.post('/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebHookHandler);
+
+app.use(
+  cors({
+    credentials: true,
+    origin: [config.get<string>('clientHost')],
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(deserializeUser);
 app.use(router);
@@ -26,14 +35,16 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
+const port = config.get('port');
+
 app.listen(port, async () => {
   log.info(`App started at http://localhost:${port}`);
-  console.log('Server listening on port ' + port);
 
   await connectToDb();
   await initialAdmin();
   await initialConfig();
 
+  await cancelExpiredTickets();
   cron.schedule('* * * * *', async () => {
     await cancelExpiredTickets();
   });

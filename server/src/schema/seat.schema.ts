@@ -5,9 +5,13 @@ export const createSeatSchema = object({
   body: object({
     className: string({
       required_error: 'Class name is required',
-    }).refine(async (val) => !(await existsBySeatClassname(val)), {
-      message: 'Class name is exist',
-    }),
+    })
+      .min(1, {
+        message: 'Class name is required',
+      })
+      .refine(async (val) => !(await existsBySeatClassname(val)), {
+        message: 'Class name is exist',
+      }),
 
     extraFee: number({
       required_error: 'Extra fee is required',
@@ -29,11 +33,7 @@ export const updateSeatSchema = object({
       message: 'Not found seat class with Id',
     }),
   }),
-  body: createSeatSchema.shape.body.extend({
-    className: string({
-      required_error: 'Class name is required',
-    }),
-  }),
+  body: createSeatSchema.shape.body.extend({}),
 });
 
 export type createSeatInput = TypeOf<typeof createSeatSchema>['body'];

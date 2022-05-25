@@ -1,7 +1,7 @@
 import ConfigurationModel, { Configuration } from '@/model/configuration.model';
 
 export async function updateConfig(config: Partial<Configuration>) {
-  await ConfigurationModel.findOneAndUpdate({}, config, { sort: { createdAt: -1 } });
+  await ConfigurationModel.findOneAndUpdate({}, config, { sort: { $natural: -1 } });
 }
 
 export async function existsConfig() {

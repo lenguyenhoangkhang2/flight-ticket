@@ -1,15 +1,8 @@
 import { CreateSessionInput } from '@/schema/auth.schema';
-import {
-  createSession,
-  findSessionById,
-  signAccessToken,
-  signRefreshToken,
-  updateSession,
-} from '@/service/auth.service';
-import { findUserByEmail, findUserById } from '@/service/user.service';
-import { verifyJwt } from '@/utils/jwt';
+import { createSession, signAccessToken, signRefreshToken, updateSession } from '@/service/auth.service';
+import { findUserByEmail } from '@/service/user.service';
+import dayjs from 'dayjs';
 import { Request, Response } from 'express';
-import _ from 'lodash';
 
 export async function createSessionHandler(req: Request<unknown, unknown, CreateSessionInput>, res: Response) {
   // Lay email, password duoc gui tu request
@@ -30,7 +23,7 @@ export async function createSessionHandler(req: Request<unknown, unknown, Create
 
   // Kiem tra tai khoan da duoc xac minh
   if (!user.verified) {
-    return res.status(401).send([
+    return res.status(400).send([
       {
         path: ['body'],
         message: 'Please verify your email',
@@ -42,7 +35,7 @@ export async function createSessionHandler(req: Request<unknown, unknown, Create
   const isValid = await user.validatePassword(password);
 
   if (!isValid) {
-    return res.status(401).send([
+    return res.status(400).send([
       {
         path: ['body', 'password'],
         message: 'Invalid password',
@@ -51,50 +44,69 @@ export async function createSessionHandler(req: Request<unknown, unknown, Create
   }
 
   const session = await createSession(user);
-
   const accessToken = signAccessToken(user, session);
+
   const refreshToken = await signRefreshToken(session);
 
-  return res.send({
-    accessToken,
-    refreshToken,
-  });
-}
+  res.cookie(
+    'api-auth',
+    { accessToken, refreshToken },
+    {
+      secure: false,
+      httpOnly: true,
+      expires: dayjs().add(1, 'y').toDate(),
+    },
+  );
 
-export async function refreshAccessTokenHandler(req: Request, res: Response) {
-  const refreshToken = _.get(req, 'headers.x-refresh');
-
-  const decoded = verifyJwt<{ sessionId: string }>(refreshToken, 'refreshTokenPublicKey');
-
-  if (!decoded) {
-    return res.status(401).send({ message: 'Could not refresh access token' });
-  }
-
-  const session = await findSessionById(decoded.sessionId);
-
-  if (!session) {
-    return res.status(401).send({ message: 'Could not refresh access token' });
-  }
-
-  const user = await findUserById(String(session.user));
-
-  if (!user) {
-    return res.status(401).send({ message: 'Could not refresh access token' });
-  }
-
-  const accessToken = signAccessToken(user, session);
-
-  return res.send({ accessToken });
+  return res.sendStatus(200);
 }
 
 export async function deleteSessionHandler(req: Request, res: Response) {
   const sessionId = res.locals.user.sessionId;
-  console.log(sessionId);
 
   await updateSession({ _id: sessionId }, { valid: false });
 
-  return res.send({
-    accessToken: null,
-    refreshToken: null,
-  });
+  res.clearCookie('api-auth');
+
+  return res.sendStatus(200);
 }
+
+// export async function refreshAccessTokenHandler(req: Request, res: Response) {
+//   // const refreshToken = _.get(req, 'headers.x-refresh');
+//   const { refreshToken } = req.cookies['api-auth'];
+
+//   const decoded = verifyJwt<{ sessionId: string }>(refreshToken, 'refreshTokenPublicKey');
+
+//   if (!decoded) {
+//     res.clearCookie('api-auth');
+//     return res.sendStatus(401);
+//   }
+
+//   const session = await findSessionById(decoded.sessionId);
+
+//   if (!session || !session?.valid) {
+//     res.clearCookie('api-auth');
+//     return res.sendStatus(401);
+//   }
+
+//   const user = await findUserById(String(session.user));
+
+//   if (!user) {
+//     res.clearCookie('api-auth');
+//     return res.sendStatus(401);
+//   }
+
+//   const accessToken = signAccessToken(user, session);
+
+//   res.cookie(
+//     'api-auth',
+//     { accessToken, refreshToken },
+//     {
+//       secure: false,
+//       httpOnly: true,
+//       expires: dayjs().add(1, 'y').toDate(),
+//     },
+//   );
+
+//   return res.sendStatus(200);
+// }

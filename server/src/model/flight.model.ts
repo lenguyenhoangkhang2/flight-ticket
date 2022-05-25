@@ -1,4 +1,4 @@
-import { getModelForClass, modelOptions, prop, Ref, index } from '@typegoose/typegoose';
+import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
 import { Airport } from './airport.model';
 import { Seat } from './seat.model';
 import { User } from './user.model';
@@ -22,6 +22,9 @@ export class SeatsOfFlight {
   },
 })
 export class Ticket {
+  @prop()
+  _id: string;
+
   @prop({ required: true, ref: () => User })
   user?: Ref<User>;
 
@@ -29,7 +32,7 @@ export class Ticket {
   seatClass: Ref<Seat>;
 
   @prop({ required: true })
-  price?: number;
+  price: number;
 
   @prop({ default: false })
   paid?: boolean;
