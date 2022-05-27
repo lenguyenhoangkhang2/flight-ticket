@@ -285,7 +285,7 @@ const FlightForm = ({ data = initialData, defaultType = "view" }) => {
                   <NumberFormat
                     value={stopover.delay}
                     customInput={TextField}
-                    label="Giá vé"
+                    label="Thời gian chờ"
                     suffix=" phút"
                     thousandSeparator={false}
                     allowNegative={false}
