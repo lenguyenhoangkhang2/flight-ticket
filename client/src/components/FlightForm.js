@@ -6,6 +6,7 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  Modal,
   // Snackbar,
   Stack,
   TextField,
@@ -21,6 +22,20 @@ import flightApi from "../api/flightApi";
 import zodValidate from "../utils/zodValidate.js";
 import NumberFormat from "react-number-format";
 import { minutesToSeconds, secondsToMinutes } from "date-fns";
+import { Box } from "@mui/system";
+import FlightOrderTable from "./FlightOrderTable";
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "white",
+  border: "1px solid #333",
+  boxShadow: 24,
+  p: 4,
+};
 
 const initialData = {
   _id: "",
@@ -38,9 +53,14 @@ const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const FlightForm = ({ data = initialData, defaultType = "view" }) => {
+const FlightForm = ({
+  data = initialData,
+  defaultType = "view",
+  showBtnOpenOrdered = false,
+}) => {
   const [type, setType] = useState(defaultType);
   const [flight, setFlight] = useState({
+    ...data,
     _id: data._id,
     airline: data.airline,
     fromLocation: data.fromLocation._id,
@@ -56,6 +76,7 @@ const FlightForm = ({ data = initialData, defaultType = "view" }) => {
     price: data.price,
   });
   const [errors, setErrors] = useState(null);
+  const [orderedTableOpen, setOrderedTableOpen] = useState(false);
   const catchFlight = useState({ ...flight })[0];
 
   const isReadOnly = type === "view" ? true : false;
@@ -91,6 +112,21 @@ const FlightForm = ({ data = initialData, defaultType = "view" }) => {
     }));
 
     return _.set("stopovers", stopovers, flight);
+  };
+
+  const renderBtnOpenOrdered = () => {
+    if (flight.tickets?.length > 0)
+      return (
+        <Button
+          onClick={() => setOrderedTableOpen(true)}
+          sx={{ width: 220 }}
+          variant="contained"
+        >
+          Xem đặt trước
+        </Button>
+      );
+
+    return <Typography variant="body2">Chưa có lượt đặt trước nào</Typography>;
   };
 
   useEffect(() => {
@@ -472,6 +508,16 @@ const FlightForm = ({ data = initialData, defaultType = "view" }) => {
               </Button>
             </Grid>
           )}
+          {showBtnOpenOrdered && (
+            <Grid item xs={12}>
+              <Stack spacing={1}>
+                <Typography variant="body2" fontWeight="700">
+                  Danh sách đặt trước
+                </Typography>
+                {renderBtnOpenOrdered()}
+              </Stack>
+            </Grid>
+          )}
         </Grid>
         <Grid item xs={12} display="flex" justifyContent="end">
           {type === "view" && (
@@ -527,12 +573,37 @@ const FlightForm = ({ data = initialData, defaultType = "view" }) => {
           )}
         </Grid>
       </Grid>
+
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={updateFlightMutate.isLoading || createFlightMutate.isLoading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      <Modal
+        open={orderedTableOpen}
+        onClose={() => setOrderedTableOpen(false)}
+        aria-labelledby="create-flight-modal-title"
+      >
+        <Box
+          sx={{ ...style, width: "fit-content" }}
+          padding={20}
+          bgcolor="#fff"
+        >
+          <Typography
+            id="create-flight-modal-title"
+            fontWeight="700"
+            color="#333"
+            variant="h5"
+            component="h2"
+            marginBottom={4}
+          >
+            Thông tin đặc trước
+          </Typography>
+          <FlightOrderTable data={flight.tickets} />
+        </Box>
+      </Modal>
     </>
   );
 };

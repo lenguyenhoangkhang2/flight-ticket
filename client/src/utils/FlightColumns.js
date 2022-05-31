@@ -74,7 +74,6 @@ const flightColumns = ({ expander }) => [
     Header: () => null,
     id: "expander",
     Cell: (value) => expander(value),
-    disableSortBy: true,
   },
 ];
 

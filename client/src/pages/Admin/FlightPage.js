@@ -62,7 +62,7 @@ const useStyles = makeStyles({
 });
 
 export default function FlightPage() {
-  const classes = useStyles();
+  // const classes = useStyles();
 
   const [date, setDate] = useState(new Date());
   const [fromLocation, setFromLocation] = useState("all");
@@ -139,7 +139,7 @@ export default function FlightPage() {
           padding="none"
         >
           <Box padding={5}>
-            <FlightForm data={flight} />
+            <FlightForm data={flight} showBtnOpenOrdered={true} />
           </Box>
         </TableCell>
       </>
@@ -171,23 +171,25 @@ export default function FlightPage() {
     }
 
     return (
-      <FlightsTable
-        columns={columns}
-        data={flights}
-        renderRowSubComponent={renderRowSubComponent}
-        useStyles={useStyles}
-        headerTitle={
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            align="center"
-            color="white"
-          >
-            {`DS Chuyến Bay - ${format(date, "PPPP")}`}
-          </Typography>
-        }
-        hiddenColumns={["airline", "stopovers", "seats", "_id"]}
-      />
+      <>
+        <FlightsTable
+          columns={columns}
+          data={flights}
+          renderRowSubComponent={renderRowSubComponent}
+          useStyles={useStyles}
+          headerTitle={
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              align="center"
+              color="white"
+            >
+              {`DS Chuyến Bay - ${format(date, "PPPP")}`}
+            </Typography>
+          }
+          hiddenColumns={["airline", "stopovers", "seats", "_id"]}
+        />
+      </>
     );
   };
 

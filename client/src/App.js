@@ -13,7 +13,7 @@ import UserProfilePage from "./pages/UserProfilePage";
 import AirportPage from "./pages/Admin/AirportPage";
 import SeatClassPage from "./pages/Admin/SeatClassPage";
 import VerifyAccountPage from "./pages/VerifyAccountPage";
-import ResetPasswodPage from "./pages/ResetPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ThemeProvider } from "@mui/styles";
@@ -44,10 +44,10 @@ function App() {
                     element={<VerifyAccountPage />}
                   />
                   <Route path="reset-password">
-                    <Route index element={<ResetPasswodPage />} />
+                    <Route index element={<ResetPasswordPage />} />
                     <Route
                       path=":userId/:passwordResetCode"
-                      element={<ResetPasswodPage />}
+                      element={<ResetPasswordPage />}
                     />
                   </Route>
                   <Route

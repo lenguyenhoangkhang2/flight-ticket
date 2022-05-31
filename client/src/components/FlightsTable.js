@@ -6,7 +6,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
   Typography,
 } from "@mui/material";
 import React from "react";
@@ -18,7 +17,7 @@ const FlightsTable = ({
   renderRowSubComponent,
   hiddenColumns,
   headerTitle,
-  useStyles = () => { },
+  useStyles = () => {},
 }) => {
   const classes = useStyles();
 

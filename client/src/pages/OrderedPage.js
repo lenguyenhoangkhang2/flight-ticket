@@ -264,7 +264,7 @@ const OrderedPage = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-            {checked[values._id].length > 0 && (
+            {checked[values._id]?.length > 0 && (
               <Box textAlign="right">
                 <Typography marginY={1} fontWeight="700" color="#ff6d00">
                   Tổng cộng:&nbsp;
