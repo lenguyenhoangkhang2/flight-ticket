@@ -65,10 +65,9 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
     createAirportMutate.mutate(airport, {
       onSuccess: () => {
         queryClient.invalidateQueries("airports", { active: true });
-        setCatchAirport(airport);
-        setOpenSnackbar(true);
-        setType("view");
-        setSnackbarMessage("Thêm sân bay thành công");
+        setAirport(initAirport);
+        setOpenSnackbar({ isOpen: true, severity: "success" });
+        setSnackbarMessage("Thêm  sân bay thành công");
       },
       onError: (error) => {
         if (

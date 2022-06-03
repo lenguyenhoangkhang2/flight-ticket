@@ -12,18 +12,21 @@ import seatApi from "../api/seatApi";
 import zodValidate from "../utils/zodValidate";
 import NumberFormat from "react-number-format";
 
-const initAirport = {
-  name: "",
-  location: "",
+const initSeatClass = {
+  className: "",
+  extraFee: "",
 };
 
 const Alert = forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
-  const [seatClass, setSeatClass] = useState(airportData);
-  const [catchSeatClass, setCatchAirport] = useState(seatClass);
+const SeatClassForm = ({
+  seatClassData = initSeatClass,
+  typeDefault = "view",
+}) => {
+  const [seatClass, setSeatClass] = useState(seatClassData);
+  const [catchSeatClass, setCatchSeatClass] = useState(seatClass);
   const [type, setType] = useState(typeDefault);
   const [errors, setErrors] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState({
@@ -41,8 +44,8 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
   };
 
   useEffect(() => {
-    setSeatClass(airportData);
-  }, [airportData]);
+    setSeatClass(seatClassData);
+  }, [seatClassData]);
 
   const queryClient = useQueryClient();
   const updateSeatClassMutate = useMutation(seatApi.updateSeatclass);
@@ -50,11 +53,11 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
 
   const isReadOnly = type === "view";
 
-  const handleUpdateAirport = () => {
+  const handleUpdateSeatClass = () => {
     updateSeatClassMutate.mutate(seatClass, {
       onSuccess: () => {
         queryClient.invalidateQueries("seats", { active: true });
-        setCatchAirport(seatClass);
+        setCatchSeatClass(seatClass);
         setOpenSnackbar({ isOpen: true, severity: "success" });
         setType("view");
         setSnackbarMessage("Cập nhật thông tin hạng ghế thành công");
@@ -62,20 +65,19 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
     });
   };
 
-  const handleCreateAirport = () => {
+  const handleCreateSeatClass = () => {
     createSeatClassMutate.mutate(seatClass, {
       onSuccess: () => {
-        queryClient.invalidateQueries("seats", { active: true });
-        setCatchAirport(seatClass);
-        setOpenSnackbar(true);
-        setType("view");
+        setOpenSnackbar({ isOpen: true, severity: "success" });
         setSnackbarMessage("Thêm  hạng ghế thành công");
+        setSeatClass(initSeatClass);
+        queryClient.invalidateQueries("seats", { active: true });
       },
       onError: (error) => {
         if (
           error.response.data &&
           error.response.data.message ===
-            "Amount of SeatClass has reached the limit"
+          "Amount of SeatClass has reached the limit"
         ) {
           setOpenSnackbar({ isOpen: true, severity: "error" });
           setSnackbarMessage(error.response.data.message);
@@ -152,7 +154,7 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
           <Button
             size="small"
             variant="contained"
-            onClick={handleUpdateAirport}
+            onClick={handleUpdateSeatClass}
             disabled={_.isEqual(seatClass, catchSeatClass)}
           >
             Lưu lại
@@ -162,15 +164,15 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
       {type === "create" && (
         <>
           <Stack spacing={1}>
-            <Button variant="contained" onClick={handleCreateAirport}>
-              Thêm chuyến bay
+            <Button variant="contained" onClick={handleCreateSeatClass}>
+              Thêm hạng ghế
             </Button>
           </Stack>
         </>
       )}
       <Snackbar
         open={openSnackbar.isOpen}
-        autoHideDuration={4000}
+        autoHideDuration={10000}
         onClose={handleClose}
         anchorOrigin={{
           vertical: "bottom",
@@ -189,4 +191,4 @@ const AirportForm = ({ airportData = initAirport, typeDefault = "view" }) => {
   );
 };
 
-export default AirportForm;
+export default SeatClassForm;

@@ -97,7 +97,7 @@ const SeatClassPage = () => {
                     Mã: {seatClass._id}
                   </Typography>
                 </Stack>
-                <SeatClassForm airportData={seatClass} />
+                <SeatClassForm seatClassData={seatClass} />
               </Stack>
             </Grid>
           </React.Fragment>
