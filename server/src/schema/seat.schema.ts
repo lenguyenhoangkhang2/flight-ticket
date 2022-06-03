@@ -33,7 +33,23 @@ export const updateSeatSchema = object({
       message: 'Not found seat class with Id',
     }),
   }),
-  body: createSeatSchema.shape.body.extend({}),
+  body: object({
+    className: string({
+      required_error: 'Class name is required',
+    }).min(1, {
+      message: 'Class name is required',
+    }),
+
+    extraFee: number({
+      required_error: 'Extra fee is required',
+    })
+      .nonnegative({
+        message: 'Extra fee must greater than or equal to 0',
+      })
+      .max(100, {
+        message: 'Extra fee must lower than or equal to 100',
+      }),
+  }),
 });
 
 export type createSeatInput = TypeOf<typeof createSeatSchema>['body'];
